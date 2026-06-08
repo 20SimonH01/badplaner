@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Badplaner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1D9E75;
+      --green-dark: #0F6E56;
+      --green-light: #E6F7F2;
+      --text: #1A1A1A;
+      --text-muted: #6B7280;
+      --border: #E5E7EB;
+      --bg: #FAFAFA;
+      --white: #FFFFFF;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 60px;
+    }
+
+    /* HEADER */
+    header {
+      width: 100%;
+      padding: 18px 24px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .logo span { color: var(--green); }
+
+    /* PROGRESS */
+    .progress-wrap {
+      width: 100%;
+      max-width: 520px;
+      padding: 20px 20px 0;
+    }
+    .progress-bar {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+    .progress-step {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      border-radius: 99px;
+      transition: background 0.4s;
+    }
+    .progress-step.active { background: var(--green); }
+    .progress-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* CARD */
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 28px 24px;
+      margin: 16px 20px 0;
+    }
+
+    /* STEP VISIBILITY */
+    .step { display: none; }
+    .step.visible { display: block; }
+
+    /* TYPOGRAPHY */
+    .step-tag {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1.25;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+
+    /* FEATURE LIST */
+    .features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .feature-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* BUTTONS */
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--green);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--green-dark); }
+    .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+    .btn-ghost {
+      background: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 10px;
+      margin-top: 6px;
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    /* UPLOAD GRID */
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .upload-box {
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-sm);
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+      background: var(--bg);
+    }
+    .upload-box:hover { border-color: var(--green); background: var(--green-light); }
+    .upload-box.done { border-style: solid; border-color: var(--green); }
+    .upload-box input {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      font-size: 0;
+    }
+    .upload-box img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .upload-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+    .upload-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 0 8px;
+      line-height: 1.4;
+    }
+    .upload-box.done .upload-label { display: none; }
+    .upload-done-badge {
+      display: none;
+      position: absolute;
+      bottom: 6px; right: 6px;
+      background: var(--green);
+      color: white;
+      border-radius: 99px;
+      width: 20px; height: 20px;
+      font-size: 11px;
+      align-items: center;
+      justify-content: center;
+    }
+    .upload-box.done .upload-done-badge { display: flex; }
+
+    /* INPUTS */
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .input-wrap { position: relative; }
+    .input-wrap input {
+      width: 100%;
+      padding: 11px 36px 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.2s;
+    }
+    .input-wrap input:focus { outline: none; border-color: var(--green); }
+    .input-wrap .unit {
+      position: absolute;
+      right: 10px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .field input[type="text"], .field input[type="email"], .field input[type="tel"] {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.2s;
+    }
+    .field input[type="text"]:focus,
+    .field input[type="email"]:focus,
+    .field input[type="tel"]:focus { outline: none; border-color: var(--green); }
+
+    /* STYLE CARDS */
+    .style-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .style-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .style-card:hover { border-color: var(--green); background: var(--green-light); }
+    .style-card.selected { border: 2px solid var(--green); background: var(--green-light); }
+    .style-card .style-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .style-card .style-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .style-card.selected .style-desc { color: var(--green-dark); }
+
+    /* OBJECT GRID */
+    .obj-section { margin-bottom: 20px; }
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .obj-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .obj-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+    }
+    .obj-card:hover { border-color: var(--green); background: var(--green-light); }
+    .obj-card.selected { border: 2px solid var(--green); background: var(--green-light); }
+    .obj-name {
+      font-size: 13px;
+      color: var(--text);
+    }
+    .obj-card.selected .obj-name { color: var(--green-dark); font-weight: 500; }
+    .obj-check {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .obj-card.selected .obj-check {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+      font-size: 11px;
+    }
+
+    /* GATE (blurred preview) */
+    .teaser-box {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .teaser-inner {
+      padding: 16px;
+      filter: blur(5px);
+      user-select: none;
+      pointer-events: none;
+    }
+    .teaser-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .teaser-row:last-child { border-bottom: none; }
+    .teaser-row .t-label { color: var(--text-muted); }
+    .teaser-row .t-val { font-weight: 500; }
+    .teaser-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.5);
+    }
+    .lock-pill {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* RESULT */
+    .result-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+    .check-circle {
+      width: 40px; height: 40px;
+      background: var(--green-light);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green);
+      font-size: 18px;
+    }
+    .result-title { font-size: 18px; font-weight: 500; }
+    .result-sub { font-size: 13px; color: var(--text-muted); }
+    .result-row {
+      display: flex; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .result-row:last-of-type { border-bottom: none; }
+    .r-label { color: var(--text-muted); }
+    .r-val { font-weight: 500; }
+    .price-card {
+      background: var(--green-light);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin: 16px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .price-label { font-size: 13px; color: var(--text-muted); }
+    .price-note { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .price-val { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--text); }
+    .price-range { font-size: 12px; color: var(--text-muted); text-align: right; }
+    .disclaimer {
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .disclaimer strong { color: var(--text); font-weight: 500; }
+
+    .privacy-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .privacy-note a { color: var(--green); text-decoration: none; }
+
+    /* SKIP NOTE */
+    .skip-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+    .skip-note:hover { color: var(--text); }
+
+    @media (max-width: 400px) {
+      h1 { font-size: 22px; }
+      .card { padding: 22px 18px; margin: 12px 12px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Bad<span>planer</span></div>
+  <div style="font-size:13px;color:var(--text-muted)" id="header-step">Schritt 1 von 5</div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-bar">
+    <div class="progress-step active" id="p1"></div>
+    <div class="progress-step" id="p2"></div>
+    <div class="progress-step" id="p3"></div>
+    <div class="progress-step" id="p4"></div>
+    <div class="progress-step" id="p5"></div>
+  </div>
+</div>
+
+<div class="card">
+
+  <!-- SCHRITT 1: WILLKOMMEN -->
+  <div class="step visible" id="step-1">
+    <p class="step-tag">Kostenlose Badplanung</p>
+    <h1>Ihr neues Bad – jetzt planen</h1>
+    <p class="sub">In wenigen Schritten erstellen wir Ihren persönlichen Badplan mit Produktvorschlägen und einer unverbindlichen Preisschätzung.</p>
+    <div class="features">
+      <div class="feature"><div class="feature-dot"></div>Fotos vom Bad hochladen</div>
+      <div class="feature"><div class="feature-dot"></div>Maße & Wunschstil angeben</div>
+      <div class="feature"><div class="feature-dot"></div>Sanitärobjekte auswählen</div>
+      <div class="feature"><div class="feature-dot"></div>Persönlichen Badplan erhalten</div>
+    </div>
+    <button class="btn btn-primary" onclick="goTo(2)">Jetzt starten →</button>
+  </div>
+
+  <!-- SCHRITT 2: FOTOS -->
+  <div class="step" id="step-2">
+    <p class="step-tag">Schritt 1 von 4</p>
+    <h1>Fotos Ihres Bades</h1>
+    <p class="sub">Fotografieren Sie Ihr Bad aus allen vier Ecken. Das hilft uns, den Grundriss besser einzuschätzen.</p>
+    <div class="upload-grid">
+      <div class="upload-box" id="box-1">
+        <input type="file" accept="image/*" capture="environment" onchange="fileChosen(event,1)" aria-label="Ecke 1 – vorne links">
+        <div class="upload-icon">📷</div>
+        <div class="upload-label">Ecke 1<br>vorne links</div>
+        <div class="upload-done-badge">✓</div>
+      </div>
+      <div class="upload-box" id="box-2">
+        <input type="file" accept="image/*" capture="environment" onchange="fileChosen(event,2)" aria-label="Ecke 2 – vorne rechts">
+        <div class="upload-icon">📷</div>
+        <div class="upload-label">Ecke 2<br>vorne rechts</div>
+        <div class="upload-done-badge">✓</div>
+      </div>
+      <div class="upload-box" id="box-3">
+        <input type="file" accept="image/*" capture="environment" onchange="fileChosen(event,3)" aria-label="Ecke 3 – hinten links">
+        <div class="upload-icon">📷</div>
+        <div class="upload-label">Ecke 3<br>hinten links</div>
+        <div class="upload-done-badge">✓</div>
+      </div>
+      <div class="upload-box" id="box-4">
+        <input type="file" accept="image/*" capture="environment" onchange="fileChosen(event,4)" aria-label="Ecke 4 – hinten rechts">
+        <div class="upload-icon">📷</div>
+        <div class="upload-label">Ecke 4<br>hinten rechts</div>
+        <div class="upload-done-badge">✓</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-2" onclick="goTo(3)">Weiter →</button>
+    <button class="btn btn-ghost" onclick="goTo(3)">Fotos überspringen</button>
+  </div>
+
+  <!-- SCHRITT 3: MASSE -->
+  <div class="step" id="step-3">
+    <p class="step-tag">Schritt 2 von 4</p>
+    <h1>Maße des Bades</h1>
+    <p class="sub">Geben Sie die Abmessungen ein, wenn bekannt. Schätzungen sind auch in Ordnung.</p>
+    <div class="field">
+      <label>Abmessungen (in cm)</label>
+      <div class="field-row">
+        <div class="input-wrap">
+          <input type="number" id="laenge" placeholder="250" min="0" aria-label="Länge in cm">
+          <span class="unit">L</span>
+        </div>
+        <div class="input-wrap">
+          <input type="number" id="breite" placeholder="180" min="0" aria-label="Breite in cm">
+          <span class="unit">B</span>
+        </div>
+        <div class="input-wrap">
+          <input type="number" id="hoehe" placeholder="250" min="0" aria-label="Höhe in cm">
+          <span class="unit">H</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="goTo(4)">Weiter →</button>
+    <button class="btn btn-ghost" onclick="goTo(2)">← Zurück</button>
+  </div>
+
+  <!-- SCHRITT 4: STIL + OBJEKTE -->
+  <div class="step" id="step-4">
+    <p class="step-tag">Schritt 3 von 4</p>
+    <h1>Stil & Ausstattung</h1>
+    <p class="sub">Wählen Sie einen Stil und die Objekte, die Sie möchten oder erneuern wollen.</p>
+
+    <div class="section-label">Ihr Wunschstil</div>
+    <div class="style-grid" style="margin-bottom:24px">
+      <div class="style-card" onclick="selectStil(this,'Modern')">
+        <div class="style-name">Modern</div>
+        <div class="style-desc">Klare Linien, schlicht, zeitlos</div>
+      </div>
+      <div class="style-card" onclick="selectStil(this,'Rustikal')">
+        <div class="style-name">Rustikal</div>
+        <div class="style-desc">Warm, natürlich, gemütlich</div>
+      </div>
+      <div class="style-card" onclick="selectStil(this,'Klassisch')">
+        <div class="style-name">Klassisch</div>
+        <div class="style-desc">Elegant, stilvoll, zeitlos</div>
+      </div>
+      <div class="style-card" onclick="selectStil(this,'Minimalistisch')">
+        <div class="style-name">Minimalistisch</div>
+        <div class="style-desc">Reduziert, luftig, puristisch</div>
+      </div>
+    </div>
+
+    <div class="section-label">Sanitärobjekte</div>
+    <div class="obj-grid" style="margin-bottom:20px">
+      <div class="obj-card" onclick="toggleObj(this,'WC')">
+        <span class="obj-name">WC</span>
+        <div class="obj-check">✓</div>
+      </div>
+      <div class="obj-card" onclick="toggleObj(this,'Badewanne')">
+        <span class="obj-name">Badewanne</span>
+        <div class="obj-check">✓</div>
+      </div>
+      <div class="obj-card" onclick="toggleObj(this,'Dusche')">
+        <span class="obj-name">Dusche</span>
+        <div class="obj-check">✓</div>
+      </div>
+      <div class="obj-card" onclick="toggleObj(this,'Waschbecken')">
+        <span class="obj-name">Waschbecken</span>
+        <div class="obj-check">✓</div>
+      </div>
+      <div class="obj-card" onclick="toggleObj(this,'Spiegelschrank')">
+        <span class="obj-name">Spiegelschrank</span>
+        <div class="obj-check">✓</div>
+      </div>
+      <div class="obj-card" onclick="toggleObj(this,'Unterschrank')">
+        <span class="obj-name">Unterschrank</span>
+        <div class="obj-check">✓</div>
+      </div>
+      <div class="obj-card" onclick="toggleObj(this,'UP-Spülkasten')">
+        <span class="obj-name">UP-Spülkasten</span>
+        <div class="obj-check">✓</div>
+      </div>
+      <div class="obj-card" onclick="toggleObj(this,'Handtuchheizkörper')">
+        <span class="obj-name">Handtuchheizkörper</span>
+        <div class="obj-check">✓</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-4" disabled onclick="goTo(5)">Weiter →</button>
+    <button class="btn btn-ghost" onclick="goTo(3)">← Zurück</button>
+  </div>
+
+  <!-- SCHRITT 5: KONTAKT GATE -->
+  <div class="step" id="step-5">
+    <p class="step-tag">Fast fertig</p>
+    <h1>Ihr Badplan ist bereit</h1>
+    <p class="sub">Geben Sie Ihre Kontaktdaten ein, um Ihren persönlichen Plan mit Preisschätzung freizuschalten.</p>
+
+    <div class="teaser-box">
+      <div class="teaser-inner">
+        <div class="teaser-row"><span class="t-label">Stil</span><span class="t-val" id="teaser-stil">–</span></div>
+        <div class="teaser-row"><span class="t-label">Objekte</span><span class="t-val" id="teaser-obj">–</span></div>
+        <div class="teaser-row"><span class="t-label">Fläche</span><span class="t-val" id="teaser-flaeche">–</span></div>
+        <div class="teaser-row"><span class="t-label">Geschätzte Kosten</span><span class="t-val" id="teaser-preis">–</span></div>
+      </div>
+      <div class="teaser-overlay">
+        <div class="lock-pill">🔒 Kontaktdaten eingeben zum Freischalten</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Vor- und Nachname *</label>
+      <input type="text" id="inp-name" placeholder="Max Mustermann" oninput="checkGate()">
+    </div>
+    <div class="field">
+      <label>Telefonnummer *</label>
+      <input type="tel" id="inp-tel" placeholder="+49 151 12345678" oninput="checkGate()">
+    </div>
+    <div class="field">
+      <label>E-Mail (optional)</label>
+      <input type="email" id="inp-email" placeholder="name@mail.de">
+    </div>
+
+    <p class="privacy-note">Ihre Daten werden nur zur Bearbeitung Ihrer Anfrage verwendet. <a href="#">Datenschutzerklärung</a></p>
+
+    <button class="btn btn-primary" id="btn-gate" disabled onclick="submitAndUnlock()">Plan anzeigen →</button>
+    <button class="btn btn-ghost" onclick="goTo(4)">← Zurück</button>
+  </div>
+
+  <!-- SCHRITT 6: ERGEBNIS -->
+  <div class="step" id="step-6">
+    <div class="result-header">
+      <div class="check-circle">✓</div>
+      <div>
+        <div class="result-title">Ihr Badplan</div>
+        <div class="result-sub">Unverbindliche Übersicht</div>
+      </div>
+    </div>
+
+    <div class="result-row"><span class="r-label">Stil</span><span class="r-val" id="res-stil">–</span></div>
+    <div class="result-row"><span class="r-label">Fläche</span><span class="r-val" id="res-flaeche">–</span></div>
+    <div class="result-row"><span class="r-label">Ausgewählte Objekte</span><span class="r-val" id="res-obj">–</span></div>
+
+    <div class="price-card">
+      <div>
+        <div class="price-label">Geschätzte Materialkosten</div>
+        <div class="price-note">ohne Montage & individuelle Arbeiten</div>
+      </div>
+      <div style="text-align:right">
+        <div class="price-val" id="res-preis-von">–</div>
+        <div class="price-range" id="res-preis-bis"></div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Hinweis:</strong> Rohrleitungen und weitere Installationsarbeiten werden nach einer kostenlosen Vorortbesichtigung individuell kalkuliert. Alle Preise sind unverbindliche Schätzwerte.
+    </div>
+
+    <button class="btn btn-primary" onclick="alert('Vielen Dank! Wir melden uns bei Ihnen.')">Anfrage absenden ✓</button>
+  </div>
+
+</div><!-- .card -->
+
+<script>
+  // STATE
+  const state = {
+    uploads: {},
+    stil: '',
+    objekte: [],
+    laenge: 0,
+    breite: 0,
+    hoehe: 0,
+    name: '',
+    tel: '',
+    email: ''
+  };
+
+  // NAVIGATION
+  function goTo(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('visible'));
+    document.getElementById('step-' + n).classList.add('visible');
+    // Progress
+    const total = 5;
+    document.querySelectorAll('.progress-step').forEach((p, i) => {
+      p.classList.toggle('active', i < n);
+    });
+    const label = n === 1 ? '' : `Schritt ${n-1} von 4`;
+    document.getElementById('header-step').textContent = n === 1 ? 'Kostenlos & unverbindlich' : `Schritt ${n-1} von 4`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (n === 5) fillTeaser();
+  }
+
+  // UPLOAD
+  function fileChosen(e, n) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const box = document.getElementById('box-' + n);
+      let img = box.querySelector('img');
+      if (!img) { img = document.createElement('img'); box.appendChild(img); }
+      img.src = ev.target.result;
+      box.classList.add('done');
+      state.uploads[n] = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // STIL
+  function selectStil(el, val) {
+    document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state.stil = val;
+    checkStep4();
+  }
+
+  // OBJEKTE
+  function toggleObj(el, name) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) {
+      if (!state.objekte.includes(name)) state.objekte.push(name);
+    } else {
+      state.objekte = state.objekte.filter(o => o !== name);
+    }
+    checkStep4();
+  }
+
+  function checkStep4() {
+    document.getElementById('btn-4').disabled = !(state.stil && state.objekte.length > 0);
+  }
+
+  // GATE CHECK
+  function checkGate() {
+    const n = document.getElementById('inp-name').value.trim();
+    const t = document.getElementById('inp-tel').value.trim();
+    document.getElementById('btn-gate').disabled = !(n.length > 1 && t.length > 6);
+  }
+
+  // TEASER FILL
+  function fillTeaser() {
+    const l = parseInt(document.getElementById('laenge').value) || 0;
+    const b = parseInt(document.getElementById('breite').value) || 0;
+    const flaeche = l && b ? ((l * b) / 10000).toFixed(1) + ' m²' : 'k.A.';
+    document.getElementById('teaser-stil').textContent = state.stil || 'k.A.';
+    document.getElementById('teaser-obj').textContent = state.objekte.slice(0, 3).join(', ') + (state.objekte.length > 3 ? ' ...' : '') || 'k.A.';
+    document.getElementById('teaser-flaeche').textContent = flaeche;
+    const preis = calcPreis();
+    document.getElementById('teaser-preis').textContent = `€ ${preis.von.toLocaleString('de-DE')} – ${preis.bis.toLocaleString('de-DE')}`;
+  }
+
+  // PREIS KALKULATION (grob)
+  function calcPreis() {
+    const preise = {
+      'WC': 400, 'Badewanne': 900, 'Dusche': 700, 'Waschbecken': 350,
+      'Spiegelschrank': 300, 'Unterschrank': 250, 'UP-Spülkasten': 200, 'Handtuchheizkörper': 250
+    };
+    let base = 0;
+    state.objekte.forEach(o => { base += preise[o] || 300; });
+    const l = parseInt(document.getElementById('laenge').value) || 200;
+    const b = parseInt(document.getElementById('breite').value) || 180;
+    const fliesenfaktor = Math.round((l * b) / 10000) * 150;
+    const gesamt = base + fliesenfaktor;
+    return { von: Math.round(gesamt * 0.9 / 100) * 100, bis: Math.round(gesamt * 1.3 / 100) * 100 };
+  }
+
+  // SUBMIT + UNLOCK
+  function submitAndUnlock() {
+    state.name = document.getElementById('inp-name').value.trim();
+    state.tel = document.getElementById('inp-tel').value.trim();
+    state.email = document.getElementById('inp-email').value.trim();
+
+    // Ergebnis befüllen
+    const l = parseInt(document.getElementById('laenge').value) || 0;
+    const b = parseInt(document.getElementById('breite').value) || 0;
+    const flaeche = l && b ? ((l * b) / 10000).toFixed(1) + ' m²' : 'Nicht angegeben';
+    const preis = calcPreis();
+
+    document.getElementById('res-stil').textContent = state.stil || 'k.A.';
+    document.getElementById('res-flaeche').textContent = flaeche;
+    document.getElementById('res-obj').textContent = state.objekte.join(', ') || 'k.A.';
+    document.getElementById('res-preis-von').textContent = `€ ${preis.von.toLocaleString('de-DE')}`;
+    document.getElementById('res-preis-bis').textContent = `bis € ${preis.bis.toLocaleString('de-DE')}`;
+
+    goTo(6);
+    document.querySelector('.progress-bar').querySelectorAll('.progress-step').forEach(p => p.classList.add('active'));
+  }
+</script>
+</body>
+</html>
