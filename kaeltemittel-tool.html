@@ -62,17 +62,29 @@ select{width:100%;padding:11px 36px 11px 12px;border-radius:10px;border:1.5px so
 .sel-arrow{pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);}
 
 /* ── SLIDER ── */
-.sl-row{margin-bottom:14px;}
-.sl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
-.sl-name{font-size:13px;font-weight:600;color:var(--text2);}
-.sl-val{font-size:22px;font-weight:800;color:var(--accent2);font-variant-numeric:tabular-nums;letter-spacing:-.5px;}
-.sl-unit{font-size:13px;color:var(--text3);margin-left:2px;}
-.sl-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+.sl-row{margin-bottom:16px;}
+.sl-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.sl-name{font-size:13px;font-weight:600;color:var(--text2);flex:1;}
+.sl-unit{font-size:14px;color:var(--text3);margin-left:4px;}
+.sl-sub{font-size:11px;color:var(--text3);margin-top:4px;}
 .sl-sub b{color:var(--accent3);}
+/* Direct value input */
+.val-in{
+  background:transparent;border:none;
+  border-bottom:2px solid var(--accent);
+  color:var(--accent2);font-size:28px;font-weight:800;
+  width:76px;text-align:right;padding-bottom:2px;
+  font-variant-numeric:tabular-nums;letter-spacing:-0.5px;
+  font-family:inherit;outline:none;
+  -moz-appearance:textfield;
+}
+.val-in:focus{border-bottom-color:var(--accent3);}
+.val-in::-webkit-outer-spin-button,
+.val-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 input[type=range]{
   -webkit-appearance:none;appearance:none;
   width:100%;height:8px;border-radius:4px;
-  background:var(--surface3);outline:none;cursor:pointer;
+  background:var(--surface3);outline:none;cursor:pointer;margin-top:4px;
 }
 input[type=range]::-webkit-slider-thumb{
   -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
@@ -220,58 +232,76 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.8;}
 
     <!-- Drücke -->
     <div class="card">
-      <div class="card-lbl">Drücke (Monteurhilfe)</div>
+      <div class="card-lbl">Drücke (Monteurhilfe) — Wert antippen &amp; eingeben</div>
       <div class="sl-row">
         <div class="sl-top">
           <span class="sl-name" id="nd-label">Niederdruck (ND)</span>
-          <div><span class="sl-val" id="nd-val">8.0</span><span class="sl-unit">bar</span></div>
+          <div style="display:flex;align-items:baseline">
+            <input type="number" inputmode="decimal" class="val-in" id="nd-in" value="8.0" min="0" max="22" step="0.1" oninput="onValIn('nd',0,22)">
+            <span class="sl-unit">bar</span>
+          </div>
         </div>
-        <input type="range" id="nd-sl" min="0" max="22" step="0.1" value="8.0" oninput="onSlide()">
+        <input type="range" id="nd-sl" min="0" max="22" step="0.1" value="8.0" oninput="onSlideSync('nd')">
         <div class="sl-sub" id="nd-sub">Verdampfungstemperatur: <b id="nd-tsat">—</b></div>
       </div>
       <div class="sl-row" style="margin-bottom:0">
         <div class="sl-top">
           <span class="sl-name" id="hd-label">Hochdruck (HD)</span>
-          <div><span class="sl-val" id="hd-val">22.0</span><span class="sl-unit">bar</span></div>
+          <div style="display:flex;align-items:baseline">
+            <input type="number" inputmode="decimal" class="val-in" id="hd-in" value="22.0" min="0" max="50" step="0.1" oninput="onValIn('hd',0,50)">
+            <span class="sl-unit">bar</span>
+          </div>
         </div>
-        <input type="range" id="hd-sl" min="0" max="50" step="0.1" value="22.0" oninput="onSlide()">
+        <input type="range" id="hd-sl" min="0" max="50" step="0.1" value="22.0" oninput="onSlideSync('hd')">
         <div class="sl-sub" id="hd-sub">Verflüssigungstemperatur: <b id="hd-tsat">—</b></div>
       </div>
     </div>
 
     <!-- Anliegetemperaturen -->
     <div class="card">
-      <div class="card-lbl">Anliegetemperaturen</div>
+      <div class="card-lbl">Anliegetemperaturen — Wert antippen &amp; eingeben</div>
       <div class="sl-row">
         <div class="sl-top">
           <span class="sl-name" id="sug-label">Saugleitung</span>
-          <div><span class="sl-val" id="sug-val">12</span><span class="sl-unit">°C</span></div>
+          <div style="display:flex;align-items:baseline">
+            <input type="number" inputmode="decimal" class="val-in" id="sug-in" value="12" min="-20" max="40" step="0.5" oninput="onValIn('sug',-20,40)">
+            <span class="sl-unit">°C</span>
+          </div>
         </div>
-        <input type="range" id="sug-sl" min="-20" max="40" step="0.5" value="12" oninput="onSlide()">
+        <input type="range" id="sug-sl" min="-20" max="40" step="0.5" value="12" oninput="onSlideSync('sug')">
         <div class="sl-sub">Soll: <b id="sug-soll" style="color:var(--ok)">10–15°C</b></div>
       </div>
       <div class="sl-row">
         <div class="sl-top">
           <span class="sl-name" id="esp-label">Einspritzleitung</span>
-          <div><span class="sl-val" id="esp-val">15</span><span class="sl-unit">°C</span></div>
+          <div style="display:flex;align-items:baseline">
+            <input type="number" inputmode="decimal" class="val-in" id="esp-in" value="15" min="-20" max="50" step="0.5" oninput="onValIn('esp',-20,50)">
+            <span class="sl-unit">°C</span>
+          </div>
         </div>
-        <input type="range" id="esp-sl" min="-20" max="50" step="0.5" value="15" oninput="onSlide()">
+        <input type="range" id="esp-sl" min="-20" max="50" step="0.5" value="15" oninput="onSlideSync('esp')">
         <div class="sl-sub">Soll: <b style="color:var(--ok)">12–18°C</b> · Einspritz &gt; Saugleitung = normal</div>
       </div>
       <div class="sl-row">
         <div class="sl-top">
           <span class="sl-name" id="aus-label">Ausblastemperatur</span>
-          <div><span class="sl-val" id="aus-val">11</span><span class="sl-unit">°C</span></div>
+          <div style="display:flex;align-items:baseline">
+            <input type="number" inputmode="decimal" class="val-in" id="aus-in" value="11" min="0" max="35" step="0.5" oninput="onValIn('aus',0,35)">
+            <span class="sl-unit">°C</span>
+          </div>
         </div>
-        <input type="range" id="aus-sl" min="0" max="35" step="0.5" value="11" oninput="onSlide()">
+        <input type="range" id="aus-sl" min="0" max="35" step="0.5" value="11" oninput="onSlideSync('aus')">
         <div class="sl-sub">Soll: <b id="aus-soll" style="color:var(--ok)">9–13°C</b></div>
       </div>
       <div class="sl-row" style="margin-bottom:0">
         <div class="sl-top">
           <span class="sl-name">Verdichterendtemp.</span>
-          <div><span class="sl-val" id="verd-val">65</span><span class="sl-unit">°C</span></div>
+          <div style="display:flex;align-items:baseline">
+            <input type="number" inputmode="numeric" class="val-in" id="verd-in" value="65" min="20" max="130" step="1" oninput="onValIn('verd',20,130)">
+            <span class="sl-unit">°C</span>
+          </div>
         </div>
-        <input type="range" id="verd-sl" min="20" max="130" step="1" value="65" oninput="onSlide()">
+        <input type="range" id="verd-sl" min="20" max="130" step="1" value="65" oninput="onSlideSync('verd')">
         <div class="sl-sub">Soll: <b style="color:var(--ok)">55–75°C</b> · Überfüllt = auffällig niedrig</div>
       </div>
     </div>
@@ -769,23 +799,30 @@ function updateLabels() {
     : 'Verflüssigungstemperatur (innen): <b id="hd-tsat">—</b>';
 }
 
+// Sync: typing in number field → update slider
+function onValIn(id, min, max) {
+  let v = parseFloat(document.getElementById(id+'-in').value);
+  if (isNaN(v)) return;
+  v = Math.min(max, Math.max(min, v));
+  document.getElementById(id+'-sl').value = v;
+  onSlide();
+}
+// Sync: moving slider → update number field
+function onSlideSync(id) {
+  const v = parseFloat(document.getElementById(id+'-sl').value);
+  document.getElementById(id+'-in').value = v;
+  onSlide();
+}
+
 function onSlide() {
-  const nd = parseFloat(document.getElementById('nd-sl').value);
-  const hd = parseFloat(document.getElementById('hd-sl').value);
-  const sug = parseFloat(document.getElementById('sug-sl').value);
-  const esp = parseFloat(document.getElementById('esp-sl').value);
-  const aus = parseFloat(document.getElementById('aus-sl').value);
-  const verd = parseFloat(document.getElementById('verd-sl').value);
+  const nd = parseFloat(document.getElementById('nd-in').value) || 0;
+  const hd = parseFloat(document.getElementById('hd-in').value) || 0;
+  const sug = parseFloat(document.getElementById('sug-in').value) || 0;
+  const esp = parseFloat(document.getElementById('esp-in').value) || 0;
+  const aus = parseFloat(document.getElementById('aus-in').value) || 0;
+  const verd = parseFloat(document.getElementById('verd-in').value) || 0;
 
   state.nd=nd; state.hd=hd; state.sug=sug; state.esp=esp; state.aus=aus; state.verd=verd;
-
-  // Display raw values
-  document.getElementById('nd-val').textContent = nd.toFixed(1);
-  document.getElementById('hd-val').textContent = hd.toFixed(1);
-  document.getElementById('sug-val').textContent = sug % 1 === 0 ? sug : sug.toFixed(1);
-  document.getElementById('esp-val').textContent = esp % 1 === 0 ? esp : esp.toFixed(1);
-  document.getElementById('aus-val').textContent = aus % 1 === 0 ? aus : aus.toFixed(1);
-  document.getElementById('verd-val').textContent = Math.round(verd);
 
   // Saturation temperatures
   const tnd = pressToTemp(state.km, nd);
@@ -954,7 +991,12 @@ function renderPipes() {
       <div class="pipe-seg-title">${n>1 ? 'Strang '+(i+1) : 'Rohrleitungslänge'}</div>
       <div class="sl-top">
         <span class="sl-name">Länge</span>
-        <div><span class="sl-val" id="pl-val-${i}">${fillState.lengths[i]||10}</span><span class="sl-unit"> m</span></div>
+        <div style="display:flex;align-items:baseline">
+          <input type="number" inputmode="decimal" class="val-in" id="pl-in-${i}"
+            value="${fillState.lengths[i]||10}" min="1" max="50" step="0.5"
+            oninput="onPipeIn(${i})">
+          <span class="sl-unit"> m</span>
+        </div>
       </div>
       <input type="range" id="pl-sl-${i}" min="1" max="50" step="0.5"
         value="${fillState.lengths[i]||10}"
@@ -963,10 +1005,19 @@ function renderPipes() {
   document.getElementById('fill-pipes').innerHTML = html;
 }
 
+function onPipeIn(i) {
+  let v = parseFloat(document.getElementById('pl-in-'+i).value);
+  if (isNaN(v)) return;
+  v = Math.min(50, Math.max(1, v));
+  fillState.lengths[i] = v;
+  document.getElementById('pl-sl-'+i).value = v;
+  calcFill();
+}
+
 function onPipeSlide(i) {
   const v = parseFloat(document.getElementById('pl-sl-'+i).value);
   fillState.lengths[i] = v;
-  document.getElementById('pl-val-'+i).textContent = v % 1 === 0 ? v : v.toFixed(1);
+  document.getElementById('pl-in-'+i).value = v;
   calcFill();
 }
 
@@ -1076,6 +1127,12 @@ function renderInfo() {
 function init() {
   updateLabels();
   renderPipes();
+  // Init sliders from input values
+  ['nd','hd','sug','esp','aus','verd'].forEach(id => {
+    const inEl = document.getElementById(id+'-in');
+    const slEl = document.getElementById(id+'-sl');
+    if (inEl && slEl) slEl.value = inEl.value;
+  });
   onSlide();
   calcFill();
   renderPT();
