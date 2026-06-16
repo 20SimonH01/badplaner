@@ -188,6 +188,26 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.8;}
 
 /* OVERFLOW SCROLL FOR TABLES */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+/* ── MEASUREMENT ROWS ── */
+.mw-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);}
+.mw-row:last-of-type{border-bottom:none;}
+.mw-left{flex:1;min-width:0;}
+.mw-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;}
+.mw-soll{font-size:10px;color:var(--text3);margin-top:1px;}
+.mw-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.mw-entry{display:flex;align-items:baseline;gap:3px;}
+.mw-info{font-size:11px;color:var(--accent3);}
+.mw-remove{width:28px;height:28px;border-radius:50%;border:none;background:rgba(239,68,68,.12);color:var(--err);cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* ── ADD BUTTON ── */
+.add-btn{width:100%;padding:12px;border-radius:10px;border:1.5px dashed var(--border2);background:none;color:var(--accent2);font-size:13px;font-weight:600;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .15s;}
+.add-btn:active{background:rgba(59,130,246,.08);}
+.add-menu{background:var(--surface2);border-radius:12px;border:1px solid var(--border2);overflow:hidden;margin-top:6px;}
+.add-item{display:flex;align-items:center;width:100%;padding:13px 14px;text-align:left;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;}
+.add-item:last-child{border-bottom:none;}
+.add-item:active{background:rgba(59,130,246,.08);}
+.add-item-ico{width:20px;font-size:15px;margin-right:8px;}
 </style>
 </head>
 <body>
@@ -217,115 +237,85 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.8;}
   <!-- ══ PAGE 1: DIAGNOSE ══ -->
   <div class="page on" id="pg-diagnose">
 
-    <!-- Modus & Gerätetyp -->
+    <!-- Einstellungen -->
     <div class="card">
-      <div class="card-lbl">Modus & Gerätetyp</div>
-      <div class="seg">
+      <div class="card-lbl">Einstellungen</div>
+      <div class="sel-wrap" style="margin-bottom:8px">
+        <select id="km-global" onchange="onKmChange()">
+          <option value="R32">R32</option>
+          <option value="R410A" selected>R410A</option>
+          <option value="R134a">R134a</option>
+          <option value="R404A">R404A</option>
+          <option value="R407C">R407C</option>
+          <option value="R448A">R448A</option>
+          <option value="R449A">R449A</option>
+          <option value="R22">R22</option>
+        </select>
+        <svg class="sel-arrow" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" width="16" height="16"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="seg" style="margin-bottom:8px">
         <button class="seg-btn on" id="btn-cool" onclick="setModus('cool')">❄ Kühlen</button>
         <button class="seg-btn" id="btn-heat" onclick="setModus('heat')">🔥 Heizen</button>
       </div>
       <div class="seg" style="margin-bottom:0">
         <button class="seg-btn on" id="btn-wall" onclick="setGtype('wall')">📱 Wandgerät</button>
-        <button class="seg-btn" id="btn-cass" onclick="setGtype('cass')">⬛ Deckenkassette</button>
+        <button class="seg-btn" id="btn-cass" onclick="setGtype('cass')">⬛ Kassette</button>
       </div>
     </div>
 
-    <!-- Drücke -->
+    <!-- Messwerte -->
     <div class="card">
-      <div class="card-lbl">Drücke (Monteurhilfe) — Wert antippen &amp; eingeben</div>
-      <div class="sl-row">
-        <div class="sl-top">
-          <span class="sl-name" id="nd-label">Niederdruck (ND)</span>
-          <div style="display:flex;align-items:baseline">
-            <input type="number" inputmode="decimal" class="val-in" id="nd-in" value="8.0" min="0" max="22" step="0.1" oninput="onValIn('nd',0,22)">
+      <div class="card-lbl">Messwerte — Wert antippen &amp; eingeben</div>
+
+      <!-- ND immer -->
+      <div class="mw-row">
+        <div class="mw-left">
+          <div class="mw-name" id="nd-name">Saugdruck (ND)</div>
+          <div class="mw-soll">Monteurhilfe blau</div>
+        </div>
+        <div class="mw-right">
+          <div class="mw-entry">
+            <input type="number" inputmode="decimal" class="val-in" id="nd-in"
+              value="8.0" min="0" max="22" step="0.1" oninput="onUpdate()">
             <span class="sl-unit">bar</span>
           </div>
+          <div class="mw-info">Verdampfungstemp: <span id="nd-tsat">—</span></div>
         </div>
-        <input type="range" id="nd-sl" min="0" max="22" step="0.1" value="8.0" oninput="onSlideSync('nd')">
-        <div class="sl-sub" id="nd-sub">Verdampfungstemperatur: <b id="nd-tsat">—</b></div>
       </div>
-      <div class="sl-row" style="margin-bottom:0">
-        <div class="sl-top">
-          <span class="sl-name" id="hd-label">Hochdruck (HD)</span>
-          <div style="display:flex;align-items:baseline">
-            <input type="number" inputmode="decimal" class="val-in" id="hd-in" value="22.0" min="0" max="50" step="0.1" oninput="onValIn('hd',0,50)">
-            <span class="sl-unit">bar</span>
+
+      <!-- Ausblase immer -->
+      <div class="mw-row">
+        <div class="mw-left">
+          <div class="mw-name">Ausblastemperatur</div>
+          <div class="mw-soll" id="aus-soll-txt">Soll: 9–13°C (Wandgerät)</div>
+        </div>
+        <div class="mw-right">
+          <div class="mw-entry">
+            <input type="number" inputmode="decimal" class="val-in" id="aus-in"
+              value="11" min="-5" max="40" step="0.5" oninput="onUpdate()">
+            <span class="sl-unit">°C</span>
           </div>
         </div>
-        <input type="range" id="hd-sl" min="0" max="50" step="0.1" value="22.0" oninput="onSlideSync('hd')">
-        <div class="sl-sub" id="hd-sub">Verflüssigungstemperatur: <b id="hd-tsat">—</b></div>
       </div>
+
+      <!-- Optionale Werte -->
+      <div id="opt-vals"></div>
+
+      <!-- + Button -->
+      <button class="add-btn" id="add-btn" onclick="toggleAddMenu()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Messwert hinzufügen
+      </button>
+      <div id="add-menu" style="display:none"></div>
     </div>
 
-    <!-- Anliegetemperaturen -->
-    <div class="card">
-      <div class="card-lbl">Anliegetemperaturen — Wert antippen &amp; eingeben</div>
-      <div class="sl-row">
-        <div class="sl-top">
-          <span class="sl-name" id="sug-label">Saugleitung</span>
-          <div style="display:flex;align-items:baseline">
-            <input type="number" inputmode="decimal" class="val-in" id="sug-in" value="12" min="-20" max="40" step="0.5" oninput="onValIn('sug',-20,40)">
-            <span class="sl-unit">°C</span>
-          </div>
-        </div>
-        <input type="range" id="sug-sl" min="-20" max="40" step="0.5" value="12" oninput="onSlideSync('sug')">
-        <div class="sl-sub">Soll: <b id="sug-soll" style="color:var(--ok)">10–15°C</b></div>
-      </div>
-      <div class="sl-row">
-        <div class="sl-top">
-          <span class="sl-name" id="esp-label">Einspritzleitung</span>
-          <div style="display:flex;align-items:baseline">
-            <input type="number" inputmode="decimal" class="val-in" id="esp-in" value="15" min="-20" max="50" step="0.5" oninput="onValIn('esp',-20,50)">
-            <span class="sl-unit">°C</span>
-          </div>
-        </div>
-        <input type="range" id="esp-sl" min="-20" max="50" step="0.5" value="15" oninput="onSlideSync('esp')">
-        <div class="sl-sub">Soll: <b style="color:var(--ok)">12–18°C</b> · Einspritz &gt; Saugleitung = normal</div>
-      </div>
-      <div class="sl-row">
-        <div class="sl-top">
-          <span class="sl-name" id="aus-label">Ausblastemperatur</span>
-          <div style="display:flex;align-items:baseline">
-            <input type="number" inputmode="decimal" class="val-in" id="aus-in" value="11" min="0" max="35" step="0.5" oninput="onValIn('aus',0,35)">
-            <span class="sl-unit">°C</span>
-          </div>
-        </div>
-        <input type="range" id="aus-sl" min="0" max="35" step="0.5" value="11" oninput="onSlideSync('aus')">
-        <div class="sl-sub">Soll: <b id="aus-soll" style="color:var(--ok)">9–13°C</b></div>
-      </div>
-      <div class="sl-row" style="margin-bottom:0">
-        <div class="sl-top">
-          <span class="sl-name">Verdichterendtemp.</span>
-          <div style="display:flex;align-items:baseline">
-            <input type="number" inputmode="numeric" class="val-in" id="verd-in" value="65" min="20" max="130" step="1" oninput="onValIn('verd',20,130)">
-            <span class="sl-unit">°C</span>
-          </div>
-        </div>
-        <input type="range" id="verd-sl" min="20" max="130" step="1" value="65" oninput="onSlideSync('verd')">
-        <div class="sl-sub">Soll: <b style="color:var(--ok)">55–75°C</b> · Überfüllt = auffällig niedrig</div>
-      </div>
+    <!-- Berechnete Werte (nur wenn vorhanden) -->
+    <div class="card" id="uh-card" style="display:none">
+      <div class="card-lbl">Berechnete Werte</div>
+      <div class="duo" style="margin-bottom:0" id="uh-duo"></div>
     </div>
 
-    <!-- Überhitzung & Unterkühlung -->
-    <div class="card">
-      <div class="card-lbl">Überhitzung &amp; Unterkühlung</div>
-      <div class="duo">
-        <div class="duo-card">
-          <div class="duo-lbl">Überhitzung</div>
-          <div class="duo-val" id="uh-val" style="color:var(--ok)">6.1</div>
-          <div class="duo-unit">K</div>
-          <div class="duo-range">Soll: 5–8 K</div>
-        </div>
-        <div class="duo-card">
-          <div class="duo-lbl">Unterkühlung</div>
-          <div class="duo-val" id="uk-val" style="color:var(--warn)">15.0</div>
-          <div class="duo-unit">K</div>
-          <div class="duo-range">Soll: 2–3 K</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Status Kacheln -->
+    <!-- Statusanzeige -->
     <div class="card">
       <div class="card-lbl">Statusanzeige</div>
       <div class="st-grid" id="st-grid"></div>
@@ -729,16 +719,23 @@ function tempToPress(km, temp) {
 // STATE
 // ═══════════════════════════════════════════════
 let state = {
-  km: 'R410A',
-  modus: 'cool',   // cool | heat
-  gtype: 'wall',   // wall | cass
-  nd: 8.0, hd: 22.0,
-  sug: 12, esp: 15, aus: 11, verd: 65
+  km: 'R410A', modus: 'cool', gtype: 'wall'
 };
+let activeOpts = {}; // id → true for active optional values
+let addMenuOpen = false;
+
 let fillState = {
   type: 'single', ig: 2, km: 'R410A',
   pipe: '9.52', gpm: 20, pre: 3,
   lengths: [10]
+};
+
+// Optional value definitions
+const OPT_DEFS = {
+  hd:   { name: 'Hochdruck (HD)',                ico:'🔴', unit:'bar', min:0,   max:50,  step:0.1, def:22.0, soll:'Monteurhilfe rot' },
+  sug:  { name: 'Saugleitung Anliegetemp.',       ico:'🌡', unit:'°C', min:-20, max:40,  step:0.5, def:12,   soll:'Soll: 10–15°C (Kühlbetrieb)' },
+  esp:  { name: 'Einspritz-/Flüssigkeitsleitg.', ico:'🌡', unit:'°C', min:-20, max:50,  step:0.5, def:15,   soll:'Soll: 12–18°C (Kühlbetrieb)' },
+  verd: { name: 'Verdichterendtemperatur',        ico:'🔥', unit:'°C', min:20,  max:130, step:1,   def:65,   soll:'Soll: 55–75°C' },
 };
 
 // ═══════════════════════════════════════════════
@@ -762,89 +759,144 @@ function onKmChange() {
   state.km = document.getElementById('km-global').value;
   document.getElementById('fill-km').value = state.km;
   document.getElementById('tbl-km').value = state.km;
-  onSlide();
+  onUpdate();
 }
 
 function setModus(m) {
   state.modus = m;
   document.getElementById('btn-cool').classList.toggle('on', m==='cool');
   document.getElementById('btn-heat').classList.toggle('on', m==='heat');
-  updateLabels();
-  onSlide();
+  updateSollTexts();
+  onUpdate();
 }
 
 function setGtype(t) {
   state.gtype = t;
   document.getElementById('btn-wall').classList.toggle('on', t==='wall');
   document.getElementById('btn-cass').classList.toggle('on', t==='cass');
-  onSlide();
+  updateSollTexts();
+  onUpdate();
 }
 
-function updateLabels() {
+function updateSollTexts() {
   const cool = state.modus === 'cool';
-  document.getElementById('nd-label').textContent = cool ? 'Niederdruck (ND) — Saugseite' : 'Niederdruck (ND) — Verdampferseite';
-  document.getElementById('hd-label').textContent = cool ? 'Hochdruck (HD) — Druckseite' : 'Hochdruck (HD) — Verdichteraustritt';
-  document.getElementById('sug-label').textContent = cool ? 'Saugleitung (groß)' : 'Saugleitung / Kälteleitung';
-  document.getElementById('esp-label').textContent = cool ? 'Einspritzleitung (klein)' : 'Flüssigkeitsleitung (klein)';
-  document.getElementById('aus-label').textContent = cool ? 'Ausblastemperatur IG' : 'Ausblastemperatur IG';
-  const coolSug = cool ? '10–15°C' : '—';
-  const coolAus = (state.gtype === 'wall') ? (cool ? '9–13°C' : '30–45°C') : (cool ? '11–17°C' : '32–48°C');
-  document.getElementById('sug-soll').textContent = coolSug;
-  document.getElementById('aus-soll').textContent = coolAus;
-  document.getElementById('nd-sub').innerHTML = cool
-    ? 'Verdampfungstemperatur: <b id="nd-tsat">—</b>'
-    : 'Verdampfungstemperatur (außen): <b id="nd-tsat">—</b>';
-  document.getElementById('hd-sub').innerHTML = cool
-    ? 'Verflüssigungstemperatur: <b id="hd-tsat">—</b>'
-    : 'Verflüssigungstemperatur (innen): <b id="hd-tsat">—</b>';
+  const cass = state.gtype === 'cass';
+  const ausRange = cass ? (cool ? '11–17°C' : '30–45°C') : (cool ? '9–13°C' : '30–45°C');
+  document.getElementById('aus-soll-txt').textContent = 'Soll: ' + ausRange;
+  const ndName = document.getElementById('nd-name');
+  if (ndName) ndName.textContent = cool ? 'Saugdruck (ND)' : 'Niederdruck (ND)';
 }
 
-// Sync: typing in number field → update slider
-function onValIn(id, min, max) {
-  let v = parseFloat(document.getElementById(id+'-in').value);
-  if (isNaN(v)) return;
-  v = Math.min(max, Math.max(min, v));
-  document.getElementById(id+'-sl').value = v;
-  onSlide();
-}
-// Sync: moving slider → update number field
-function onSlideSync(id) {
-  const v = parseFloat(document.getElementById(id+'-sl').value);
-  document.getElementById(id+'-in').value = v;
-  onSlide();
-}
-
-function onSlide() {
-  const nd = parseFloat(document.getElementById('nd-in').value) || 0;
-  const hd = parseFloat(document.getElementById('hd-in').value) || 0;
-  const sug = parseFloat(document.getElementById('sug-in').value) || 0;
-  const esp = parseFloat(document.getElementById('esp-in').value) || 0;
-  const aus = parseFloat(document.getElementById('aus-in').value) || 0;
-  const verd = parseFloat(document.getElementById('verd-in').value) || 0;
-
-  state.nd=nd; state.hd=hd; state.sug=sug; state.esp=esp; state.aus=aus; state.verd=verd;
-
-  // Saturation temperatures
-  const tnd = pressToTemp(state.km, nd);
-  const thd = pressToTemp(state.km, hd);
-  const ndEl = document.getElementById('nd-tsat');
-  const hdEl = document.getElementById('hd-tsat');
-  if (ndEl && tnd !== null) ndEl.textContent = tnd.toFixed(1) + '°C';
-  if (hdEl && thd !== null) hdEl.textContent = thd.toFixed(1) + '°C';
-
-  // Überhitzung & Unterkühlung
-  const uh = tnd !== null ? sug - tnd : null;
-  const uk = thd !== null ? thd - esp : null;
-
-  const uhEl = document.getElementById('uh-val');
-  const ukEl = document.getElementById('uk-val');
-  if (uh !== null) {
-    uhEl.textContent = uh.toFixed(1);
-    uhEl.style.color = uh >= 5 && uh <= 8 ? 'var(--ok)' : (uh >= 3 && uh <= 15 ? 'var(--warn)' : 'var(--err)');
+// ── ADD / REMOVE OPTIONAL VALUES ──
+function toggleAddMenu() {
+  addMenuOpen = !addMenuOpen;
+  const menu = document.getElementById('add-menu');
+  const btn = document.getElementById('add-btn');
+  if (addMenuOpen) {
+    const remaining = Object.entries(OPT_DEFS).filter(([id]) => !activeOpts[id]);
+    if (remaining.length === 0) {
+      menu.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:var(--text3)">Alle Messwerte bereits hinzugefügt</div>';
+    } else {
+      menu.innerHTML = '<div class="add-menu">' + remaining.map(([id, d]) =>
+        `<button class="add-item" onclick="addVal('${id}')"><span class="add-item-ico">${d.ico}</span>${d.name}<span style="margin-left:auto;font-size:11px;color:var(--text3)">${d.unit}</span></button>`
+      ).join('') + '</div>';
+    }
+    menu.style.display = 'block';
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg> Abbrechen';
+  } else {
+    menu.style.display = 'none';
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Messwert hinzufügen';
   }
-  if (uk !== null) {
-    ukEl.textContent = uk.toFixed(1);
-    ukEl.style.color = uk >= 2 && uk <= 5 ? 'var(--ok)' : (uk >= 0 && uk <= 10 ? 'var(--warn)' : 'var(--err)');
+}
+
+function addVal(id) {
+  activeOpts[id] = true;
+  addMenuOpen = false;
+  document.getElementById('add-menu').style.display = 'none';
+  document.getElementById('add-btn').innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Messwert hinzufügen';
+  renderOptVals();
+  onUpdate();
+}
+
+function removeVal(id) {
+  delete activeOpts[id];
+  renderOptVals();
+  onUpdate();
+}
+
+function renderOptVals() {
+  const cont = document.getElementById('opt-vals');
+  const ids = Object.keys(activeOpts);
+  if (!ids.length) { cont.innerHTML = ''; return; }
+  cont.innerHTML = ids.map(id => {
+    const d = OPT_DEFS[id];
+    const extra = id === 'hd'
+      ? `<div class="mw-info">Verflüssigungstemp: <span id="hd-tsat">—</span></div>`
+      : '';
+    return `
+      <div class="mw-row" id="opt-row-${id}">
+        <div class="mw-left">
+          <div class="mw-name">${d.ico} ${d.name}</div>
+          <div class="mw-soll">${d.soll}</div>
+        </div>
+        <div class="mw-right">
+          <div class="mw-entry">
+            <input type="number" inputmode="${d.step>=1?'numeric':'decimal'}" class="val-in"
+              id="${id}-in" value="${d.def}" min="${d.min}" max="${d.max}" step="${d.step}"
+              oninput="onUpdate()">
+            <span class="sl-unit">${d.unit}</span>
+          </div>
+          ${extra}
+        </div>
+        <button class="mw-remove" onclick="removeVal('${id}')" title="Entfernen">×</button>
+      </div>`;
+  }).join('');
+}
+
+function getVal(id) {
+  const el = document.getElementById(id+'-in');
+  if (!el) return null;
+  const v = parseFloat(el.value);
+  return isNaN(v) ? null : v;
+}
+
+function onUpdate() {
+  const nd  = getVal('nd')  ?? 0;
+  const aus = getVal('aus') ?? 0;
+  const hd   = activeOpts.hd   ? getVal('hd')   : null;
+  const sug  = activeOpts.sug  ? getVal('sug')  : null;
+  const esp  = activeOpts.esp  ? getVal('esp')  : null;
+  const verd = activeOpts.verd ? getVal('verd') : null;
+
+  const tnd = pressToTemp(state.km, nd);
+  const thd = hd !== null ? pressToTemp(state.km, hd) : null;
+
+  // Update saturation displays
+  const ndTsEl = document.getElementById('nd-tsat');
+  if (ndTsEl) ndTsEl.textContent = tnd !== null ? tnd.toFixed(1)+'°C' : '—';
+  const hdTsEl = document.getElementById('hd-tsat');
+  if (hdTsEl && thd !== null) hdTsEl.textContent = thd.toFixed(1)+'°C';
+
+  // Calculated values
+  const uh = (sug !== null && tnd !== null) ? sug - tnd : null;
+  const uk = (esp !== null && thd !== null) ? thd - esp : null;
+
+  // Show/hide calc card
+  const uhCard = document.getElementById('uh-card');
+  if (uh !== null || uk !== null) {
+    uhCard.style.display = 'block';
+    let html = '';
+    if (uh !== null) {
+      const c = uh>=5&&uh<=8?'var(--ok)':uh>=3&&uh<=15?'var(--warn)':'var(--err)';
+      html += `<div class="duo-card"><div class="duo-lbl">Überhitzung</div><div class="duo-val" style="color:${c}">${uh.toFixed(1)}</div><div class="duo-unit">K</div><div class="duo-range">Soll: 5–8 K</div></div>`;
+    }
+    if (uk !== null) {
+      const c = uk>=2&&uk<=5?'var(--ok)':uk>=0&&uk<=10?'var(--warn)':'var(--err)';
+      html += `<div class="duo-card"><div class="duo-lbl">Unterkühlung</div><div class="duo-val" style="color:${c}">${uk.toFixed(1)}</div><div class="duo-unit">K</div><div class="duo-range">Soll: 2–3 K</div></div>`;
+    }
+    document.getElementById('uh-duo').innerHTML = html;
+  } else {
+    uhCard.style.display = 'none';
   }
 
   renderStatus(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk);
@@ -861,24 +913,41 @@ function renderStatus(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk) {
   const cool = state.modus === 'cool';
   const cass = state.gtype === 'cass';
   const items = [];
+
+  // Always: ND
+  items.push({ lbl:'ND-Druck', val:nd.toFixed(1)+' bar',
+    range: cool ? '6–11 bar' : '3–8 bar',
+    cls: cool ? statusClass(nd,6,11,4,13) : statusClass(nd,3,8,2,10) });
+
+  // Always: Ausblase
   if (cool) {
-    items.push({ lbl:'Saugleitung', val:sug.toFixed(1)+'°C', range:'10–15°C', cls:statusClass(sug,10,15,7,20) });
-    items.push({ lbl:'Einspritzleitg.', val:esp.toFixed(1)+'°C', range:'12–18°C', cls:statusClass(esp,12,18,9,22) });
     const ausOk = cass ? [11,17] : [9,13];
     const ausWarn = cass ? [8,20] : [7,16];
     items.push({ lbl:'Ausblase', val:aus.toFixed(1)+'°C', range:ausOk[0]+'–'+ausOk[1]+'°C', cls:statusClass(aus,ausOk[0],ausOk[1],ausWarn[0],ausWarn[1]) });
-    items.push({ lbl:'Verdichterend', val:Math.round(verd)+'°C', range:'55–75°C', cls:statusClass(verd,55,75,45,90) });
-    if (uh !== null) items.push({ lbl:'Überhitzung', val:uh.toFixed(1)+' K', range:'5–8 K', cls:statusClass(uh,5,8,3,15) });
-    if (uk !== null) items.push({ lbl:'Unterkühlung', val:uk.toFixed(1)+' K', range:'2–3 K', cls:statusClass(uk,2,5,0,10) });
-    items.push({ lbl:'ND-Druck', val:nd.toFixed(1)+' bar', range:'6–11 bar', cls:statusClass(nd,6,11,4,13) });
-    items.push({ lbl:'HD-Druck', val:hd.toFixed(1)+' bar', range:'16–28 bar', cls:statusClass(hd,16,28,12,35) });
   } else {
-    items.push({ lbl:'Saugleitung', val:sug.toFixed(1)+'°C', range:'2–8°C', cls:statusClass(sug,2,8,-5,12) });
     items.push({ lbl:'Ausblase', val:aus.toFixed(1)+'°C', range:'30–45°C', cls:statusClass(aus,30,45,25,50) });
-    items.push({ lbl:'Verdichterend', val:Math.round(verd)+'°C', range:'55–75°C', cls:statusClass(verd,55,75,45,90) });
-    items.push({ lbl:'ND-Druck', val:nd.toFixed(1)+' bar', range:'3–8 bar', cls:statusClass(nd,3,8,2,10) });
-    items.push({ lbl:'HD-Druck', val:hd.toFixed(1)+' bar', range:'18–30 bar', cls:statusClass(hd,18,30,14,38) });
   }
+
+  // Optional: HD
+  if (hd !== null) items.push({ lbl:'HD-Druck', val:hd.toFixed(1)+' bar',
+    range: cool ? '16–28 bar' : '18–30 bar',
+    cls: cool ? statusClass(hd,16,28,12,35) : statusClass(hd,18,30,14,38) });
+
+  // Optional: Saugleitung
+  if (sug !== null) items.push({ lbl:'Saugleitung', val:sug.toFixed(1)+'°C',
+    range: cool ? '10–15°C' : '2–8°C',
+    cls: cool ? statusClass(sug,10,15,7,20) : statusClass(sug,2,8,-5,12) });
+
+  // Optional: Einspritzleitung
+  if (esp !== null) items.push({ lbl:'Einspritzleitg.', val:esp.toFixed(1)+'°C', range:'12–18°C', cls:statusClass(esp,12,18,9,22) });
+
+  // Optional: Verdichterend
+  if (verd !== null) items.push({ lbl:'Verdichterend', val:Math.round(verd)+'°C', range:'55–75°C', cls:statusClass(verd,55,75,45,90) });
+
+  // Calculated: Überhitzung
+  if (uh !== null) items.push({ lbl:'Überhitzung', val:uh.toFixed(1)+' K', range:'5–8 K', cls:statusClass(uh,5,8,3,15) });
+  if (uk !== null) items.push({ lbl:'Unterkühlung', val:uk.toFixed(1)+' K', range:'2–3 K', cls:statusClass(uk,2,5,0,10) });
+
   const grid = document.getElementById('st-grid');
   grid.innerHTML = items.map(it => `
     <div class="st-card ${it.cls}">
@@ -897,20 +966,20 @@ function renderDiagnose(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk) {
     const allOk = sug>=10&&sug<=15 && esp>=12&&esp<=18 && verd>=55&&verd<=75 && (uh===null||(uh>=5&&uh<=8)) && nd>=6&&nd<=11;
     if (allOk) msgs.push({cls:'ok', ico:'✅', txt:'<b>System OK</b> — Alle Messwerte im optimalen Bereich.'});
 
-    // KM Mangel
-    if (nd < 5 && hd < 14) msgs.push({cls:'err', ico:'🔴', txt:'<b>KM-Mangel wahrscheinlich!</b> Niedriger ND UND niedriger HD. → Manometer prüfen, auf Lecks untersuchen, nachfüllen.'});
-    else if (nd < 5) msgs.push({cls:'err', ico:'🔴', txt:'<b>ND zu niedrig!</b> Möglicher KM-Mangel. Hochdruck normal = Verdampfer/E-Ventil prüfen.'});
+    // KM Mangel (ND allein oder ND+HD)
+    if (hd !== null && nd < 5 && hd < 14) msgs.push({cls:'err', ico:'🔴', txt:'<b>KM-Mangel wahrscheinlich!</b> ND und HD beide niedrig. → Lecks suchen, nachfüllen.'});
+    else if (nd < 5) msgs.push({cls:'err', ico:'🔴', txt:'<b>ND zu niedrig!</b> Möglicher KM-Mangel. HD hinzufügen für genauere Diagnose.'});
 
     // Überfüllung
-    if (nd > 12 && verd < 60) msgs.push({cls:'err', ico:'⛔', txt:'<b>Überfüllung Verdacht!</b> ND sehr hoch, Verdichtertemp. niedrig. → Kältemittel ablassen.'});
-    else if (nd > 12) msgs.push({cls:'warn', ico:'🟡', txt:'<b>ND erhöht.</b> Bei gleichzeitig lauten Verdichtergeräuschen → Überfüllung prüfen.'});
+    if (nd > 12 && verd !== null && verd < 60) msgs.push({cls:'err', ico:'⛔', txt:'<b>Überfüllung Verdacht!</b> ND sehr hoch, Verdichtertemp. niedrig. → KM ablassen.'});
+    else if (nd > 12) msgs.push({cls:'warn', ico:'🟡', txt:'<b>ND erhöht.</b> Bei lauten Verdichtergeräuschen → Überfüllung prüfen.'});
 
-    // Saugleitung Alarm
-    if (sug < 5) msgs.push({cls:'err', ico:'🔴', txt:'<b>Saugleitung zu kalt!</b> Möglicher KM-Mangel oder E-Ventil defekt.'});
-    else if (sug > 20) msgs.push({cls:'err', ico:'🔴', txt:'<b>Saugleitung zu warm!</b> KM verdampft zu früh. → Überhitzung zu groß, KM prüfen.'});
+    // Saugleitung (nur wenn vorhanden)
+    if (sug !== null && sug < 5) msgs.push({cls:'err', ico:'🔴', txt:'<b>Saugleitung zu kalt!</b> Möglicher KM-Mangel oder E-Ventil defekt.'});
+    else if (sug !== null && sug > 20) msgs.push({cls:'err', ico:'🔴', txt:'<b>Saugleitung zu warm!</b> KM verdampft zu früh. → KM-Menge prüfen.'});
 
-    // Einspritzleitung vs. Saugleitung
-    if (sug > esp) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Saugleitung wärmer als Einspritzleitung!</b> KM verdampft zu früh, direkt am AG-Austritt. → KM-Mangel oder E-Ventil prüfen.'});
+    // Einspritzleitung vs. Saugleitung (nur wenn beide vorhanden)
+    if (sug !== null && esp !== null && sug > esp) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Saugleitung wärmer als Einspritzleitung!</b> KM verdampft zu früh am AG-Austritt. → KM-Mangel oder E-Ventil prüfen.'});
 
     // Überhitzung
     if (uh !== null) {
@@ -923,9 +992,9 @@ function renderDiagnose(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk) {
     // Unterkühlung
     if (uk !== null && uk < 0) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Keine Unterkühlung (' + uk.toFixed(1) + ' K).</b> Flashgas möglich → Schauglas prüfen.'});
 
-    // Verdichtertemp
-    if (verd > 100) msgs.push({cls:'err', ico:'🔴', txt:'<b>Verdichterendtemperatur kritisch (' + Math.round(verd) + '°C)!</b> Kühlbedingungen prüfen, Überhitzung reduzieren.'});
-    else if (verd < 45) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Verdichterendtemperatur sehr niedrig (' + Math.round(verd) + '°C).</b> Bei Normalbetrieb ~60–90°C. → Überfüllung prüfen.'});
+    // Verdichtertemp (nur wenn vorhanden)
+    if (verd !== null && verd > 100) msgs.push({cls:'err', ico:'🔴', txt:'<b>Verdichterendtemperatur kritisch (' + Math.round(verd) + '°C)!</b> Kühlbedingungen prüfen, Überhitzung reduzieren.'});
+    else if (verd !== null && verd < 45) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Verdichterendtemperatur sehr niedrig (' + Math.round(verd) + '°C).</b> Normal ~60–90°C → Überfüllung prüfen.'});
 
     // Ausblase
     const ausMax = state.gtype === 'cass' ? 17 : 13;
@@ -941,7 +1010,7 @@ function renderDiagnose(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk) {
     msgs.push({cls:'info', ico:'ℹ️', txt:'Heizbetrieb: Verdampfer ist im Außengerät. Heißgas zur Inneneinheit (groß = Heißgasleitung).'});
   }
 
-  if (msgs.length === 0) msgs.push({cls:'info', ico:'ℹ️', txt:'Schieberegler anpassen um Diagnose zu erhalten.'});
+  if (msgs.length === 0) msgs.push({cls:'info', ico:'ℹ️', txt:'Alle eingegebenen Werte im Normalbereich. Weitere Messwerte per <b>+</b> hinzufügen für detailliertere Diagnose.'});
 
   document.getElementById('diag-out').innerHTML = msgs.map(m =>
     `<div class="msg ${m.cls}"><span class="msg-ico">${m.ico}</span><span>${m.txt}</span></div>`
@@ -1125,15 +1194,9 @@ function renderInfo() {
 // INIT
 // ═══════════════════════════════════════════════
 function init() {
-  updateLabels();
+  updateSollTexts();
   renderPipes();
-  // Init sliders from input values
-  ['nd','hd','sug','esp','aus','verd'].forEach(id => {
-    const inEl = document.getElementById(id+'-in');
-    const slEl = document.getElementById(id+'-sl');
-    if (inEl && slEl) slEl.value = inEl.value;
-  });
-  onSlide();
+  onUpdate();
   calcFill();
   renderPT();
 }
