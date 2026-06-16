@@ -329,6 +329,47 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.8;}
 
   </div><!-- /page diagnose -->
 
+  <!-- ══ PAGE: RICHTWERTE ══ -->
+  <div class="page" id="pg-richtwerte">
+
+    <div class="card">
+      <div class="card-lbl">Betriebspunkt eingeben</div>
+      <div class="mw-row">
+        <div class="mw-left">
+          <div class="mw-name">Saugdruck (ND)</div>
+          <div class="mw-soll">Monteurhilfe blau</div>
+        </div>
+        <div class="mw-right">
+          <div class="mw-entry">
+            <input type="number" inputmode="decimal" class="val-in" id="rv-nd" value="8.0" min="0" max="30" step="0.1" oninput="renderRichtwerte()">
+            <span class="sl-unit">bar</span>
+          </div>
+          <div class="mw-info" id="rv-tsat">T_Verdampf.: —</div>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div class="seg" style="margin-bottom:8px">
+        <button class="seg-btn on" id="rv-cool" onclick="rvSetMode('cool')">❄ Kühlen</button>
+        <button class="seg-btn" id="rv-heat" onclick="rvSetMode('heat')">🔥 Heizen</button>
+      </div>
+      <div class="seg" style="margin-bottom:0">
+        <button class="seg-btn on" id="rv-wall" onclick="rvSetGtype('wall')">📱 Wandgerät</button>
+        <button class="seg-btn" id="rv-cass" onclick="rvSetGtype('cass')">⬛ Kassette</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Optimale Richtwerte — <span id="rv-km-lbl">R410A</span></div>
+      <div id="rv-cards"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Kältemittel-Infos</div>
+      <div id="rv-km-info"></div>
+    </div>
+
+  </div><!-- /page richtwerte -->
+
   <!-- ══ PAGE 2: FÜLLRECHNER ══ -->
   <div class="page" id="pg-fill">
 
@@ -633,6 +674,10 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.8;}
     <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     <span>Diagnose</span>
   </button>
+  <button class="tab-btn" id="tab-richtwerte" onclick="showPage('richtwerte')">
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Richtwerte</span>
+  </button>
   <button class="tab-btn" id="tab-fill" onclick="showPage('fill')">
     <svg viewBox="0 0 24 24"><path d="M3 20h18M8 20V10l4-8 4 8v10"/></svg>
     <span>Füllung</span>
@@ -742,7 +787,7 @@ const OPT_DEFS = {
 // PAGE NAVIGATION
 // ═══════════════════════════════════════════════
 function showPage(p) {
-  ['diagnose','fill','tables','info'].forEach(id => {
+  ['diagnose','richtwerte','fill','tables','info'].forEach(id => {
     document.getElementById('pg-'+id).classList.remove('on');
     document.getElementById('tab-'+id).classList.remove('on');
   });
@@ -750,6 +795,7 @@ function showPage(p) {
   document.getElementById('tab-'+p).classList.add('on');
   if (p === 'tables') renderPT();
   if (p === 'info') renderInfo();
+  if (p === 'richtwerte') renderRichtwerte();
 }
 
 // ═══════════════════════════════════════════════
@@ -760,6 +806,7 @@ function onKmChange() {
   document.getElementById('fill-km').value = state.km;
   document.getElementById('tbl-km').value = state.km;
   onUpdate();
+  renderRichtwerte();
 }
 
 function setModus(m) {
@@ -1191,6 +1238,97 @@ function renderInfo() {
 }
 
 // ═══════════════════════════════════════════════
+// RICHTWERTE PAGE
+// ═══════════════════════════════════════════════
+let rvState = { modus: 'cool', gtype: 'wall' };
+
+function rvSetMode(m) {
+  rvState.modus = m;
+  document.getElementById('rv-cool').classList.toggle('on', m === 'cool');
+  document.getElementById('rv-heat').classList.toggle('on', m === 'heat');
+  renderRichtwerte();
+}
+
+function rvSetGtype(g) {
+  rvState.gtype = g;
+  document.getElementById('rv-wall').classList.toggle('on', g === 'wall');
+  document.getElementById('rv-cass').classList.toggle('on', g === 'cass');
+  renderRichtwerte();
+}
+
+const KM_INFO = {
+  R32:   { gwp: 675,  bp: -51.7, safety: 'A2L (leicht entzündlich)', note: 'Niedriges GWP · sehr effizient · Ersatz für R410A' },
+  R410A: { gwp: 2088, bp: -51.5, safety: 'A1 (nicht entzündlich)',   note: 'Zeotropes Gemisch R32+R125 · läuft aus' },
+  R134a: { gwp: 1430, bp: -26.3, safety: 'A1 (nicht entzündlich)',   note: 'Einzelstoff · Pkw-Klimaanlagen · Kühlschränke' },
+  R404A: { gwp: 3922, bp: -46.5, safety: 'A1 (nicht entzündlich)',   note: 'Kälte/Tiefkühl · sehr hohes GWP · läuft aus' },
+  R407C: { gwp: 1774, bp: -43.8, safety: 'A1 (nicht entzündlich)',   note: 'Zeotrop R32+R125+R134a · Temperaturgleit ~7K' },
+  R448A: { gwp: 1273, bp: -45.9, safety: 'A1 (nicht entzündlich)',   note: 'HFO-Mix · R404A-Ersatz · niedriges GWP' },
+  R449A: { gwp: 1282, bp: -46.0, safety: 'A1 (nicht entzündlich)',   note: 'HFO-Mix · R22/R404A-Ersatz' },
+  R22:   { gwp: 1810, bp: -40.8, safety: 'A1 (nicht entzündlich)',   note: '⚠ FCKW-Ersatz · Nachfüllen in EU verboten!' },
+};
+
+function renderRichtwerte() {
+  const km = state.km;
+  const ndBar = parseFloat(document.getElementById('rv-nd').value) || 8.0;
+  const tEvap = pressToTemp(km, ndBar);
+  const isCool = rvState.modus === 'cool';
+  const isWall = rvState.gtype === 'wall';
+
+  const tsatEl = document.getElementById('rv-tsat');
+  tsatEl.textContent = isNaN(tEvap) ? 'T_Verdampf.: —' : 'T_Verdampf.: ' + tEvap.toFixed(1) + ' °C';
+  document.getElementById('rv-km-lbl').textContent = km;
+
+  const items = [];
+
+  if (!isNaN(tEvap)) {
+    const sugMin = (tEvap + 5).toFixed(1);
+    const sugMax = (tEvap + 10).toFixed(1);
+    items.push({ name: 'Saugleitung', soll: sugMin + ' – ' + sugMax + ' °C', note: 'T_Verdampf. + 5 bis 10 K Überhitzung', color: 'blue' });
+
+    if (isCool) {
+      const ausOff1 = isWall ? 9  : 11;
+      const ausOff2 = isWall ? 14 : 17;
+      const ausMin = (tEvap + ausOff1).toFixed(1);
+      const ausMax = (tEvap + ausOff2).toFixed(1);
+      items.push({ name: 'Ausblastemperatur', soll: ausMin + ' – ' + ausMax + ' °C', note: (isWall ? 'Wandgerät' : 'Deckenkassette') + ' · T_Verdampf. + ' + ausOff1 + '–' + ausOff2 + ' K', color: 'blue' });
+    } else {
+      items.push({ name: 'Ausblastemperatur', soll: '35 – 50 °C', note: 'Heizbetrieb — abhängig von Außentemp.', color: 'blue' });
+    }
+  } else {
+    items.push({ name: 'Saugleitung', soll: isCool ? '10 – 15 °C' : '8 – 15 °C', note: 'Typische Betriebswerte', color: 'blue' });
+    items.push({ name: 'Ausblastemperatur', soll: isCool ? (isWall ? '9 – 13 °C' : '11 – 17 °C') : '35 – 50 °C', note: isCool ? (isWall ? 'Wandgerät · Kühlbetrieb' : 'Kassette · Kühlbetrieb') : 'Heizbetrieb', color: 'blue' });
+  }
+
+  items.push({ name: 'Überhitzung', soll: '5 – 8 K', note: 'T_Saugl. − T_Verdampf. (Soll)', color: 'ok' });
+  items.push({ name: 'Unterkühlung', soll: '2 – 5 K', note: 'T_Kond. − T_Einspritz. (Soll)', color: 'ok' });
+  items.push({ name: 'Einspritzleitung', soll: '12 – 25 °C', note: 'Abhängig von Verflüssigungstemperatur', color: 'blue' });
+  items.push({ name: 'Verdichterendtemp.', soll: '55 – 75 °C', note: 'Warnung >85 °C · Abschalten >100 °C', color: 'ok' });
+
+  const colorMap    = { ok: '#22c55e', blue: '#60a5fa', warn: '#f59e0b', err: '#ef4444' };
+  const bgMap       = { ok: 'rgba(34,197,94,.07)',  blue: 'rgba(59,130,246,.07)',  warn: 'rgba(245,158,11,.07)',  err: 'rgba(239,68,68,.07)' };
+  const borderMap   = { ok: 'rgba(34,197,94,.22)',  blue: 'rgba(59,130,246,.22)',  warn: 'rgba(245,158,11,.22)',  err: 'rgba(239,68,68,.22)' };
+
+  document.getElementById('rv-cards').innerHTML = items.map(it =>
+    `<div style="background:${bgMap[it.color]};border:1.5px solid ${borderMap[it.color]};border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;flex-shrink:0">${it.name}</span>
+        <span style="font-size:19px;font-weight:800;color:${colorMap[it.color]};white-space:nowrap">${it.soll}</span>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px">${it.note}</div>
+    </div>`
+  ).join('');
+
+  const info = KM_INFO[km] || {};
+  document.getElementById('rv-km-info').innerHTML =
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="duo-card"><div class="duo-lbl">GWP</div><div class="duo-val" style="font-size:20px;color:var(--accent2)">${info.gwp}</div></div>
+      <div class="duo-card"><div class="duo-lbl">Siedepunkt</div><div class="duo-val" style="font-size:20px;color:var(--accent2)">${info.bp}°C</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:4px"><b>Sicherheitsklasse:</b> ${info.safety}</div>
+    <div style="font-size:12px;color:var(--text3)">${info.note}</div>`;
+}
+
+// ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 function init() {
@@ -1199,6 +1337,7 @@ function init() {
   onUpdate();
   calcFill();
   renderPT();
+  renderRichtwerte();
 }
 
 init();
