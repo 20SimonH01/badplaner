@@ -597,7 +597,7 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
 <div class="pages">
 
   <!-- ══ PAGE 1: DIAGNOSE ══ -->
-  <div class="page on" id="pg-diagnose">
+  <div class="page" id="pg-diagnose">
 
     <!-- Einstellungen -->
     <div class="card">
@@ -692,7 +692,7 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
   </div><!-- /page diagnose -->
 
   <!-- ══ PAGE: RICHTWERTE ══ -->
-  <div class="page" id="pg-richtwerte">
+  <div class="page on" id="pg-richtwerte">
 
     <!-- Einstellungen -->
     <div class="card">
@@ -1140,13 +1140,13 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
 
 <!-- ═══════════════ BOTTOM TABS ═══════════════ -->
 <nav class="tabs">
-  <button class="tab-btn on" id="tab-diagnose" onclick="showPage('diagnose')">
-    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    <span>Diagnose</span>
-  </button>
-  <button class="tab-btn" id="tab-richtwerte" onclick="showPage('richtwerte')">
+  <button class="tab-btn on" id="tab-richtwerte" onclick="showPage('richtwerte')">
     <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     <span>Richtwerte</span>
+  </button>
+  <button class="tab-btn" id="tab-diagnose" onclick="showPage('diagnose')">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>Diagnose</span>
   </button>
   <button class="tab-btn" id="tab-tables" onclick="showPage('tables')">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
