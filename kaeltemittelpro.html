@@ -2217,9 +2217,9 @@ function renderRichtwerte() { rvOnUpdate(); }
 
   const COLS  = ['#3B82F6','#06B6D4','#10B981','#8B5CF6','#60A5FA','#34D399','#A78BFA'];
   const MOB   = window.innerWidth < 768;
-  const N     = MOB ? 22 : 34;          // neuron count
-  const REACH = MOB ? 160 : 220;        // max synapse length px
-  const FIRE_RATE = 0.018;              // chance per frame to start a new signal
+  const N     = MOB ? 16 : 24;          // neuron count
+  const REACH = MOB ? 150 : 200;        // max synapse length px
+  const FIRE_RATE = 0.005;              // chance per frame to start a new signal
 
   let W, H, neurons = [], signals = [];
 
@@ -2265,7 +2265,7 @@ function renderRichtwerte() { rvOnUpdate(); }
 
   // ── fire a signal along a random synapse ─────
   function fireSignal(fromIdx) {
-    if (signals.length >= (MOB ? 12 : 20)) return;
+    if (signals.length >= (MOB ? 4 : 6)) return;
     const syn = synapses();
     // prefer synapses connected to fromIdx if given
     const pool = fromIdx !== undefined
@@ -2299,7 +2299,7 @@ function renderRichtwerte() { rvOnUpdate(); }
     // 1. Synapses (dim base lines)
     syn.forEach(({ i, j, d }) => {
       const ni = neurons[i], nj = neurons[j];
-      const a  = (1 - d / REACH) * .14;
+      const a  = (1 - d / REACH) * .07;
       const g  = ctx.createLinearGradient(ni.x, ni.y, nj.x, nj.y);
       g.addColorStop(0, ha(ni.col, a));
       g.addColorStop(1, ha(nj.col, a));
@@ -2320,7 +2320,7 @@ function renderRichtwerte() { rvOnUpdate(); }
       const y  = fn.y + (tn.y - fn.y) * sig.t;
 
       // Lit synapse behind signal
-      const litA = (1 - sig.t) * .55;
+      const litA = (1 - sig.t) * .22;
       ctx.beginPath();
       ctx.moveTo(fn.x, fn.y);
       ctx.lineTo(tn.x, tn.y);
@@ -2329,20 +2329,20 @@ function renderRichtwerte() { rvOnUpdate(); }
       ctx.stroke();
 
       // Signal glow halo
-      const gr = ctx.createRadialGradient(x, y, 0, x, y, 18);
-      gr.addColorStop(0,   ha(sig.col, .9));
-      gr.addColorStop(.35, ha(sig.col, .45));
+      const gr = ctx.createRadialGradient(x, y, 0, x, y, 9);
+      gr.addColorStop(0,   ha(sig.col, .55));
+      gr.addColorStop(.4,  ha(sig.col, .2));
       gr.addColorStop(1,   ha(sig.col, 0));
       ctx.beginPath();
-      ctx.arc(x, y, 18, 0, Math.PI*2);
+      ctx.arc(x, y, 9, 0, Math.PI*2);
       ctx.fillStyle = gr;
       ctx.fill();
 
       // Signal core (white hot)
       ctx.beginPath();
-      ctx.arc(x, y, 2.8, 0, Math.PI*2);
+      ctx.arc(x, y, 1.8, 0, Math.PI*2);
       ctx.fillStyle = '#ffffff';
-      ctx.globalAlpha = .95;
+      ctx.globalAlpha = .7;
       ctx.fill();
       ctx.globalAlpha = 1;
 
@@ -2350,7 +2350,7 @@ function renderRichtwerte() { rvOnUpdate(); }
       if (sig.t >= 1) {
         tn.act = 1.0;
         // chain fire
-        if (Math.random() < .42) setTimeout(() => fireSignal(sig.to), 60 + Math.random() * 120);
+        if (Math.random() < .18) setTimeout(() => fireSignal(sig.to), 200 + Math.random() * 300);
       }
     });
 
@@ -2369,7 +2369,7 @@ function renderRichtwerte() { rvOnUpdate(); }
 
       // Glow corona
       const gc = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, gSize);
-      const ga = (.22 + act * .65) * pulse;
+      const ga = (.10 + act * .35) * pulse;
       gc.addColorStop(0,   ha(n.col, ga));
       gc.addColorStop(.5,  ha(n.col, ga * .4));
       gc.addColorStop(1,   ha(n.col, 0));
