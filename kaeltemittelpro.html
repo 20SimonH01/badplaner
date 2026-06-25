@@ -794,13 +794,15 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
         <button class="seg-btn" id="rv-pipe-1588" onclick="rvSetPipeRv('15.88',45)">5/8"<br><small>45g/m</small></button>
       </div>
 
-      <!-- Pipe length -->
-      <div class="card-lbl" style="margin-top:14px;margin-bottom:6px">Rohrleitungslänge gesamt</div>
-      <div class="mw-entry">
-        <input type="number" inputmode="decimal" class="val-in" id="rv-pipe-len"
-          value="5" min="0.5" max="100" step="0.5" oninput="rvCalcFill()">
-        <span class="sl-unit">m</span>
+      <!-- IG count -->
+      <div class="card-lbl" style="margin-top:14px;margin-bottom:6px">Anzahl Innengeräte</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <input type="number" inputmode="numeric" class="val-in" id="rv-ig-count"
+          value="1" min="1" max="8" step="1" oninput="rvSetIgCount()" style="max-width:80px">
+        <span id="rv-split-lbl" style="font-size:13px;color:var(--accent2);font-weight:700">Single Split</span>
       </div>
+      <!-- Dynamic pipe lengths per IG -->
+      <div id="rv-pipe-lengths"></div>
 
       <!-- Fill result -->
       <div id="rv-fill-result" style="display:none;margin-top:0">
@@ -838,8 +840,8 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
 
   </div><!-- /page richtwerte -->
 
-  <!-- ══ PAGE 2: FÜLLRECHNER ══ -->
-  <div class="page" id="pg-fill">
+  <!-- ══ PAGE 2: FÜLLRECHNER (removed — integrated in Richtwerte) ══ -->
+  <div class="page" id="pg-fill" style="display:none!important">
 
     <div class="card">
       <div class="card-lbl">Gerät & Kältemittel</div>
@@ -1146,10 +1148,6 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
     <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     <span>Richtwerte</span>
   </button>
-  <button class="tab-btn" id="tab-fill" onclick="showPage('fill')">
-    <svg viewBox="0 0 24 24"><path d="M3 20h18M8 20V10l4-8 4 8v10"/></svg>
-    <span>Füllung</span>
-  </button>
   <button class="tab-btn" id="tab-tables" onclick="showPage('tables')">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
     <span>Tabellen</span>
@@ -1237,11 +1235,7 @@ let state = {
 let activeOpts = {}; // id → true for active optional values
 let addMenuOpen = false;
 
-let fillState = {
-  type: 'single', ig: 2, km: 'R410A',
-  pipe: '9.52', gpm: 20, pre: 3,
-  lengths: [10]
-};
+// fillState removed — fill calculator now integrated in Richtwerte
 
 // Optional value definitions
 const OPT_DEFS = {
@@ -1255,7 +1249,7 @@ const OPT_DEFS = {
 // PAGE NAVIGATION
 // ═══════════════════════════════════════════════
 function showPage(p) {
-  ['diagnose','richtwerte','fill','tables','info'].forEach(id => {
+  ['diagnose','richtwerte','tables','info'].forEach(id => {
     document.getElementById('pg-'+id).classList.remove('on');
     document.getElementById('tab-'+id).classList.remove('on');
   });
@@ -1535,102 +1529,7 @@ function renderDiagnose(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk) {
 // ═══════════════════════════════════════════════
 // FILL CALCULATOR
 // ═══════════════════════════════════════════════
-function setFillType(t) {
-  fillState.type = t;
-  document.getElementById('fill-single').classList.toggle('on', t==='single');
-  document.getElementById('fill-multi').classList.toggle('on', t==='multi');
-  document.getElementById('fill-multi-ig').style.display = t==='multi' ? 'block' : 'none';
-  if (t === 'single') fillState.lengths = [fillState.lengths[0] || 10];
-  else { while (fillState.lengths.length < fillState.ig) fillState.lengths.push(10); }
-  renderPipes();
-  calcFill();
-}
-
-function setIG(n) {
-  fillState.ig = n;
-  [2,3,4].forEach(i => document.getElementById('fill-ig'+i).classList.toggle('on', i===n));
-  while (fillState.lengths.length < n) fillState.lengths.push(10);
-  fillState.lengths = fillState.lengths.slice(0, n);
-  renderPipes();
-  calcFill();
-}
-
-function setPipe(d, gpm) {
-  fillState.pipe = d; fillState.gpm = gpm;
-  ['635','952','127','1588'].forEach(id => document.getElementById('pipe-'+id).classList.remove('on'));
-  document.getElementById('pipe-'+d.replace('.','')).classList.add('on');
-  calcFill();
-}
-
-function setPre(p) {
-  fillState.pre = p;
-  [3,5,7,10].forEach(v => document.getElementById('pre-'+v).classList.toggle('on', v===p));
-  calcFill();
-}
-
-function renderPipes() {
-  const n = fillState.type === 'single' ? 1 : fillState.ig;
-  const html = Array.from({length:n}, (_, i) => `
-    <div class="pipe-seg">
-      <div class="pipe-seg-title">${n>1 ? 'Strang '+(i+1) : 'Rohrleitungslänge'}</div>
-      <div class="sl-top">
-        <span class="sl-name">Länge</span>
-        <div style="display:flex;align-items:baseline">
-          <input type="number" inputmode="decimal" class="val-in" id="pl-in-${i}"
-            value="${fillState.lengths[i]||10}" min="1" max="50" step="0.5"
-            oninput="onPipeIn(${i})">
-          <span class="sl-unit"> m</span>
-        </div>
-      </div>
-      <input type="range" id="pl-sl-${i}" min="1" max="50" step="0.5"
-        value="${fillState.lengths[i]||10}"
-        oninput="onPipeSlide(${i})">
-    </div>`).join('');
-  document.getElementById('fill-pipes').innerHTML = html;
-}
-
-function onPipeIn(i) {
-  let v = parseFloat(document.getElementById('pl-in-'+i).value);
-  if (isNaN(v)) return;
-  v = Math.min(50, Math.max(1, v));
-  fillState.lengths[i] = v;
-  document.getElementById('pl-sl-'+i).value = v;
-  calcFill();
-}
-
-function onPipeSlide(i) {
-  const v = parseFloat(document.getElementById('pl-sl-'+i).value);
-  fillState.lengths[i] = v;
-  document.getElementById('pl-in-'+i).value = v;
-  calcFill();
-}
-
-function calcFill() {
-  fillState.km = document.getElementById('fill-km').value;
-  const n = fillState.type === 'single' ? 1 : fillState.ig;
-  let total = 0;
-  const details = [];
-  for (let i = 0; i < n; i++) {
-    const len = fillState.lengths[i] || 10;
-    const extra = Math.max(0, len - fillState.pre);
-    const g = Math.round(extra * fillState.gpm);
-    total += g;
-    if (n > 1) details.push(`Strang ${i+1}: ${len}m − ${fillState.pre}m = ${extra}m × ${fillState.gpm}g = ${g}g`);
-    else details.push(`${len}m − ${fillState.pre}m Vorladung = ${extra}m × ${fillState.gpm}g/m`);
-  }
-  document.getElementById('fill-g').textContent = total;
-  document.getElementById('fill-sub').innerHTML = details.join('<br>') + (total === 0 ? '<br>⚡ Keine Nachrüstung nötig – Länge ≤ Vorbeladung' : '');
-
-  // Fill method hint
-  const km = fillState.km;
-  let method = '';
-  if (km === 'R410A' || km === 'R404A' || km === 'R407C' || km === 'R448A' || km === 'R449A') {
-    method = `<div class="msg warn"><span class="msg-ico">🔄</span><span><b>${km}: Auf dem Kopf füllen!</b> Zylinder umdrehen → flüssige Phase entnehmen.</span></div>`;
-  } else {
-    method = `<div class="msg info"><span class="msg-ico">ℹ️</span><span><b>${km}: Füllausrichtung beliebig.</b></span></div>`;
-  }
-  document.getElementById('fill-method').innerHTML = method;
-}
+// Old fill functions removed — see rvCalcFill / rvSetIgCount / rvRenderPipeLengths in Richtwerte section
 
 // ═══════════════════════════════════════════════
 // p-T TABLES
@@ -1973,7 +1872,7 @@ function rvMakeGauge(value, cfg, id) {
 }
 
 // ── Fill calculator state ──
-let rvFill = { on: false, preOn: false, preUnit: 'kg', pipe: '9.52', gpm: 20 };
+let rvFill = { on: false, preOn: false, preUnit: 'kg', pipe: '9.52', gpm: 20, igCount: 1, lengths: [5] };
 
 function rvToggleFill() {
   rvFill.on = !rvFill.on;
@@ -1981,7 +1880,40 @@ function rvToggleFill() {
   if (sw) sw.classList.toggle('on', rvFill.on);
   const card = document.getElementById('rv-fill-card');
   if (card) card.style.display = rvFill.on ? 'block' : 'none';
-  if (rvFill.on) rvCalcFill();
+  if (rvFill.on) { rvRenderPipeLengths(); rvCalcFill(); }
+}
+
+function rvSetIgCount() {
+  const n = Math.max(1, Math.min(8, parseInt(document.getElementById('rv-ig-count')?.value) || 1));
+  rvFill.igCount = n;
+  while (rvFill.lengths.length < n) rvFill.lengths.push(rvFill.lengths[0] || 5);
+  rvFill.lengths = rvFill.lengths.slice(0, n);
+  const lbl = document.getElementById('rv-split-lbl');
+  if (lbl) lbl.textContent = n === 1 ? 'Single Split' : `Multi Split · ${n} Innengeräte`;
+  rvRenderPipeLengths();
+  rvCalcFill();
+}
+
+function rvRenderPipeLengths() {
+  const cont = document.getElementById('rv-pipe-lengths');
+  if (!cont) return;
+  const n = rvFill.igCount;
+  cont.innerHTML = Array.from({length: n}, (_, i) => `
+    <div style="margin-bottom:8px">
+      ${n > 1 ? `<div style="font-size:11px;color:var(--text3);margin-bottom:4px">Innengerät ${i+1}</div>` : `<div class="card-lbl" style="margin-bottom:6px">Rohrleitungslänge</div>`}
+      <div class="mw-entry">
+        <input type="number" inputmode="decimal" class="val-in" id="rv-len-${i}"
+          value="${rvFill.lengths[i] || 5}" min="0.5" max="100" step="0.5"
+          oninput="rvLenInput(${i})">
+        <span class="sl-unit">m</span>
+      </div>
+    </div>`).join('');
+}
+
+function rvLenInput(i) {
+  const v = parseFloat(document.getElementById('rv-len-' + i)?.value);
+  if (!isNaN(v)) rvFill.lengths[i] = v;
+  rvCalcFill();
 }
 
 function rvTogglePre() {
@@ -2014,32 +1946,34 @@ function rvSetPipeRv(d, gpm) {
 
 function rvCalcFill() {
   if (!rvFill.on) return;
-  const pipeLenEl = document.getElementById('rv-pipe-len');
-  const preValEl  = document.getElementById('rv-pre-val');
-  if (!pipeLenEl) return;
-  const pipeLen = parseFloat(pipeLenEl.value) || 0;
-  const preVal  = rvFill.preOn ? (parseFloat(preValEl?.value) || 0) : 0;
-  const totalFromPipe = pipeLen * rvFill.gpm;
-  let additional = 0;
-  let noteText = '';
+  const preValEl = document.getElementById('rv-pre-val');
+  const preVal   = rvFill.preOn ? (parseFloat(preValEl?.value) || 0) : 0;
+  const n        = rvFill.igCount;
+  const totalLen = rvFill.lengths.slice(0, n).reduce((a, b) => a + (b || 0), 0);
+  const totalFromPipe = totalLen * rvFill.gpm;
+  let additional = 0, noteText = '';
+
   if (rvFill.preOn && preVal > 0) {
     if (rvFill.preUnit === 'kg') {
       const preGrams = preVal * 1000;
       additional = Math.max(0, totalFromPipe - preGrams);
-      noteText = `${pipeLen}m × ${rvFill.gpm}g/m = ${totalFromPipe.toFixed(0)}g − Vorbeladung ${preGrams.toFixed(0)}g`;
+      noteText = `${totalLen.toFixed(1)}m × ${rvFill.gpm}g/m = ${totalFromPipe.toFixed(0)}g − Vorbeladung ${preGrams.toFixed(0)}g`;
     } else {
       const preFillGrams = preVal * rvFill.gpm;
       additional = Math.max(0, totalFromPipe - preFillGrams);
-      noteText = `${pipeLen}m − ${preVal}m Vorbeladung = ${Math.max(0, pipeLen - preVal).toFixed(1)}m × ${rvFill.gpm}g/m`;
+      noteText = `${totalLen.toFixed(1)}m − ${preVal}m Vorbeladung × ${rvFill.gpm}g/m`;
     }
   } else {
     additional = totalFromPipe;
-    noteText = `${pipeLen}m × ${rvFill.gpm}g/m${rvFill.preOn ? ' (AG leer / kein Vorladen)' : ''}`;
+    noteText = n > 1
+      ? rvFill.lengths.slice(0,n).map((l,i)=>`IG${i+1}: ${(l||0).toFixed(1)}m`).join(' + ') + ` = ${totalLen.toFixed(1)}m × ${rvFill.gpm}g/m`
+      : `${totalLen.toFixed(1)}m × ${rvFill.gpm}g/m${rvFill.preOn ? ' (AG leer)' : ''}`;
   }
-  const gEl   = document.getElementById('rv-fill-g');
+
+  const gEl    = document.getElementById('rv-fill-g');
   const noteEl = document.getElementById('rv-fill-note');
   const resEl  = document.getElementById('rv-fill-result');
-  if (gEl)   gEl.textContent   = Math.round(additional);
+  if (gEl)    gEl.textContent    = Math.round(additional);
   if (noteEl) noteEl.textContent = noteText;
   if (resEl)  resEl.style.display = 'block';
 }
@@ -2245,9 +2179,7 @@ function renderRichtwerte() { rvOnUpdate(); }
 // ═══════════════════════════════════════════════
 function init() {
   updateSollTexts();
-  renderPipes();
   onUpdate();
-  calcFill();
   renderPT();
   renderRichtwerte();
 }
