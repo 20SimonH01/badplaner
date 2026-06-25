@@ -110,15 +110,40 @@ body{
   0%  {background-position:0% center;}
   100%{background-position:200% center;}
 }
-.hdr-km{
-  background:rgba(255,255,255,.07);
-  border:1px solid var(--gb2);border-radius:12px;
-  color:var(--accent3);font-size:13px;font-weight:700;
-  padding:7px 13px;cursor:pointer;
-  -webkit-appearance:none;appearance:none;
+/* ── HEADER GREETING ── */
+.hdr-greet{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);border-radius:20px;
+  padding:6px 14px 6px 10px;
   backdrop-filter:blur(12px);
-  box-shadow:0 0 14px rgba(59,130,246,.12),inset 0 1px 0 rgba(255,255,255,.08);
+  box-shadow:0 0 16px rgba(59,130,246,.10),inset 0 1px 0 rgba(255,255,255,.08);
+  cursor:pointer;transition:background .2s,border-color .2s;
+  max-width:220px;
 }
+.hdr-greet:hover{background:rgba(255,255,255,.10);border-color:rgba(99,179,237,.35);}
+.hdr-greet-ico{font-size:16px;flex-shrink:0;}
+.hdr-greet-txt{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hdr-greet-txt b{color:var(--accent);font-weight:700;}
+.hdr-greet-edit{font-size:10px;color:var(--text3);flex-shrink:0;opacity:.7;}
+/* name input overlay */
+.hdr-name-wrap{
+  display:none;position:absolute;top:62px;right:16px;z-index:300;
+  background:rgba(8,14,44,.92);border:1px solid rgba(99,179,237,.35);
+  border-radius:14px;padding:14px 16px;
+  backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.6);
+  min-width:220px;
+}
+.hdr-name-wrap.vis{display:block;}
+.hdr-name-wrap label{display:block;font-size:11px;font-weight:600;color:var(--text3);margin-bottom:8px;}
+.hdr-name-inp{
+  width:100%;box-sizing:border-box;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+  border-radius:9px;padding:8px 12px;color:#fff;font-size:14px;font-weight:600;
+  outline:none;
+}
+.hdr-name-inp:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(59,130,246,.25);}
+.hdr-name-hint{font-size:10px;color:var(--text3);margin-top:6px;}
 
 /* ── TABS ── */
 .tabs{
@@ -610,19 +635,16 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
 <!-- ═══════════════ HEADER ═══════════════ -->
 <header class="hdr">
   <span class="hdr-title">❄ KältemittelPro</span>
-  <div style="display:flex;align-items:center;gap:8px;">
-    <div class="sel-wrap" style="margin:0;">
-      <select class="hdr-km" id="km-global" onchange="onKmChange()">
-        <option value="R32">R32</option>
-        <option value="R410A" selected>R410A</option>
-        <option value="R134a">R134a</option>
-        <option value="R404A">R404A</option>
-        <option value="R407C">R407C</option>
-        <option value="R448A">R448A</option>
-        <option value="R449A">R449A</option>
-        <option value="R22">R22</option>
-      </select>
-    </div>
+  <div class="hdr-greet" id="hdr-greet" onclick="hdrGreetToggle()">
+    <span class="hdr-greet-ico" id="hdr-greet-ico">👋</span>
+    <span class="hdr-greet-txt" id="hdr-greet-txt"><b>Guten Tag</b></span>
+    <span class="hdr-greet-edit">✏</span>
+  </div>
+  <div class="hdr-name-wrap" id="hdr-name-wrap">
+    <label>Wie heißt du?</label>
+    <input class="hdr-name-inp" id="hdr-name-inp" type="text" maxlength="24"
+      placeholder="Dein Vorname…" oninput="hdrNameUpdate()" onkeydown="if(event.key==='Enter')hdrNameClose()">
+    <div class="hdr-name-hint">Wird lokal gespeichert · ↵ zum Bestätigen</div>
   </div>
 </header>
 
@@ -1292,6 +1314,52 @@ function showPage(p) {
   if (p === 'info') renderInfo();
   if (p === 'richtwerte') renderRichtwerte();
 }
+
+// ═══════════════════════════════════════════════
+// HEADER GREETING
+// ═══════════════════════════════════════════════
+(function hdrGreetInit() {
+  function greetWord() {
+    const h = new Date().getHours();
+    if (h < 11) return ['🌅','Guten Morgen'];
+    if (h < 18) return ['☀️','Guten Tag'];
+    return ['🌙','Guten Abend'];
+  }
+  function render() {
+    const name = localStorage.getItem('kmpro-name') || '';
+    const [ico, word] = greetWord();
+    document.getElementById('hdr-greet-ico').textContent = ico;
+    document.getElementById('hdr-greet-txt').innerHTML = name
+      ? `${word}, <b>${name}</b>`
+      : `<b>${word}</b> <span style="color:var(--text3);font-weight:400">– Wer bist du?</span>`;
+    const inp = document.getElementById('hdr-name-inp');
+    if (inp) inp.value = name;
+  }
+  window.hdrGreetToggle = function() {
+    const w = document.getElementById('hdr-name-wrap');
+    const isVis = w.classList.toggle('vis');
+    if (isVis) {
+      const inp = document.getElementById('hdr-name-inp');
+      inp.focus(); inp.select();
+    }
+  };
+  window.hdrNameUpdate = function() {
+    const v = document.getElementById('hdr-name-inp').value.trim();
+    if (v) localStorage.setItem('kmpro-name', v); else localStorage.removeItem('kmpro-name');
+    render();
+  };
+  window.hdrNameClose = function() {
+    document.getElementById('hdr-name-wrap').classList.remove('vis');
+  };
+  // close on outside click
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('hdr-greet').contains(e.target) &&
+        !document.getElementById('hdr-name-wrap').contains(e.target)) {
+      document.getElementById('hdr-name-wrap').classList.remove('vis');
+    }
+  });
+  render();
+})();
 
 // ═══════════════════════════════════════════════
 // DIAGNOSE PAGE
