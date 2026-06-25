@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>KältemittelPro</title>
+<style>
+/* ═══════════════════════════════════════
+   LIQUID GLASS · DARK PREMIUM THEME
+   ═══════════════════════════════════════ */
+:root {
+  --bg:      #05091A;
+  --accent:  #3B82F6;
+  --accent2: #60A5FA;
+  --accent3: #93C5FD;
+  --cyan:    #06B6D4;
+  --violet:  #A78BFA;
+  --ok:      #10B981;
+  --ok2:     #34D399;
+  --warn:    #F59E0B;
+  --err:     #EF4444;
+  --text:    #F0F6FF;
+  --text2:   #8EA4BF;
+  --text3:   #4A6080;
+  /* glass layers */
+  --g1: rgba(255,255,255,0.05);
+  --g2: rgba(255,255,255,0.07);
+  --g3: rgba(255,255,255,0.10);
+  --gb: rgba(255,255,255,0.08);  /* border */
+  --gb2:rgba(255,255,255,0.12);
+  /* legacy compat */
+  --surface:  var(--g1);
+  --surface2: var(--g2);
+  --surface3: var(--g3);
+  --border:   rgba(255,255,255,0.05);
+  --border2:  rgba(255,255,255,0.09);
+  --radius: 16px;
+  --tab-h: 72px;
+}
+
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+
+/* ── BODY / BACKGROUND ── */
+html{height:100%;}
+body{
+  min-height:100%;
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 700px 500px at 15% 25%, rgba(59,130,246,.14) 0%, transparent 65%),
+    radial-gradient(ellipse 600px 600px at 85% 75%, rgba(139,92,246,.11) 0%, transparent 65%),
+    radial-gradient(ellipse 500px 350px at 65% 10%, rgba(6,182,212,.09)  0%, transparent 65%),
+    radial-gradient(ellipse 400px 400px at 30% 85%, rgba(16,185,129,.07) 0%, transparent 65%);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  font-size:15px;line-height:1.4;
+  overflow-x:hidden;
+}
+
+/* ── HEADER ── */
+.hdr{
+  position:sticky;top:0;z-index:200;
+  background:rgba(5,9,26,.82);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  border-bottom:1px solid var(--gb);
+  box-shadow:0 1px 0 rgba(255,255,255,.04), 0 4px 24px rgba(0,0,0,.4);
+  padding:0 16px;
+  height:54px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hdr-title{
+  font-size:18px;font-weight:800;letter-spacing:-.4px;
+  background:linear-gradient(120deg,#60A5FA 0%,#06B6D4 45%,#A78BFA 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hdr-km{
+  background:rgba(255,255,255,.07);
+  border:1px solid var(--gb2);
+  border-radius:10px;
+  color:var(--accent3);font-size:13px;font-weight:700;
+  padding:6px 12px;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  backdrop-filter:blur(8px);
+}
+
+/* ── TABS ── */
+.tabs{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(5,9,26,.88);
+  backdrop-filter:blur(32px) saturate(180%);
+  -webkit-backdrop-filter:blur(32px) saturate(180%);
+  border-top:1px solid var(--gb);
+  box-shadow:0 -1px 0 rgba(255,255,255,.04), 0 -8px 32px rgba(0,0,0,.35);
+  display:flex;height:var(--tab-h);
+}
+.tab-btn{
+  flex:1;border:none;background:none;color:var(--text3);cursor:pointer;
+  padding:8px 4px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:color .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.tab-btn.on{color:var(--accent2);}
+.tab-btn.on svg{filter:drop-shadow(0 0 6px rgba(96,165,250,.55));}
+.tab-btn svg{width:22px;height:22px;stroke-width:1.8;fill:none;stroke:currentColor;transition:filter .2s;}
+.tab-btn span{font-size:10px;font-weight:600;letter-spacing:.03em;}
+
+/* ── SCROLL AREA ── */
+.pages{padding:14px 12px calc(var(--tab-h) + 14px);max-width:500px;margin:0 auto;}
+.page{display:none;}
+.page.on{display:block;}
+
+/* ── GLASS CARD ── */
+.card{
+  background:linear-gradient(145deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.03) 100%);
+  border:1px solid var(--gb);
+  border-top:1px solid rgba(255,255,255,.14);
+  border-radius:var(--radius);
+  padding:16px;margin-bottom:12px;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.28),
+    0 2px 8px rgba(0,0,0,.2),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.card-lbl{
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text3);margin-bottom:12px;
+}
+
+/* ── TOGGLE BUTTONS ── */
+.seg{display:flex;gap:6px;margin-bottom:10px;}
+.seg-btn{
+  flex:1;padding:9px 6px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  color:var(--text2);font-size:13px;font-weight:600;
+  cursor:pointer;text-align:center;
+  transition:all .18s;
+  backdrop-filter:blur(8px);
+}
+.seg-btn.on{
+  border-color:rgba(59,130,246,.5);
+  background:rgba(59,130,246,.18);
+  color:var(--accent2);
+  box-shadow:0 0 14px rgba(59,130,246,.2), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.seg-btn:active{transform:scale(.97);}
+
+/* ── SELECT ── */
+.sel-wrap{position:relative;margin-bottom:10px;}
+select{
+  width:100%;padding:11px 36px 11px 12px;
+  border-radius:10px;
+  border:1px solid var(--gb2);
+  background:rgba(255,255,255,.06);
+  color:var(--text);font-size:14px;
+  -webkit-appearance:none;appearance:none;outline:none;
+  backdrop-filter:blur(8px);
+}
+.sel-arrow{pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);}
+
+/* ── VALUE INPUT ── */
+.val-in{
+  background:transparent;border:none;
+  border-bottom:2px solid rgba(59,130,246,.7);
+  color:var(--accent2);font-size:28px;font-weight:800;
+  width:76px;text-align:right;padding-bottom:2px;
+  font-variant-numeric:tabular-nums;letter-spacing:-.5px;
+  font-family:inherit;outline:none;
+  -moz-appearance:textfield;
+  transition:border-color .2s;
+}
+.val-in:focus{
+  border-bottom-color:var(--cyan);
+  filter:drop-shadow(0 2px 8px rgba(6,182,212,.35));
+}
+.val-in::-webkit-outer-spin-button,
+.val-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.sl-unit{font-size:14px;color:var(--text3);margin-left:4px;}
+.sl-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.sl-sub b{color:var(--accent3);}
+.sl-row{margin-bottom:16px;}
+.sl-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.sl-name{font-size:13px;font-weight:600;color:var(--text2);flex:1;}
+
+/* ── RANGE SLIDER ── */
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:6px;border-radius:3px;
+  background:rgba(255,255,255,.08);
+  outline:none;cursor:pointer;margin-top:6px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#3B82F6,#06B6D4);
+  box-shadow:0 0 14px rgba(59,130,246,.55),0 2px 8px rgba(0,0,0,.3);
+  cursor:pointer;transition:transform .12s;
+}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.18);}
+input[type=range]::-moz-range-thumb{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#3B82F6,#06B6D4);border:none;cursor:pointer;
+}
+
+/* ── DUO CARDS ── */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.duo-card{
+  background:rgba(255,255,255,.05);
+  border-radius:13px;padding:13px;text-align:center;
+  border:1px solid var(--gb);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+.duo-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px;}
+.duo-val{font-size:26px;font-weight:800;}
+.duo-unit{font-size:13px;color:var(--text3);}
+.duo-range{font-size:10px;color:var(--text3);margin-top:4px;}
+
+/* ── STATUS GRID ── */
+.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.st-card{border-radius:14px;padding:13px;border:1px solid;}
+.st-card.ok {background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25);box-shadow:inset 0 1px 0 rgba(16,185,129,.08);}
+.st-card.warn{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25);box-shadow:inset 0 1px 0 rgba(245,158,11,.08);}
+.st-card.err {background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.25); box-shadow:inset 0 1px 0 rgba(239,68,68,.08);}
+.st-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.ok   .dot{background:var(--ok);  box-shadow:0 0 6px var(--ok);}
+.warn .dot{background:var(--warn);box-shadow:0 0 6px var(--warn);}
+.err  .dot{background:var(--err); box-shadow:0 0 6px var(--err);}
+.st-val{font-size:21px;font-weight:800;margin:5px 0 2px;}
+.ok   .st-val{color:var(--ok2);}
+.warn .st-val{color:var(--warn);}
+.err  .st-val{color:var(--err);}
+.st-range{font-size:10px;color:var(--text3);}
+
+/* ── DIAGNOSE MESSAGES ── */
+.msg{display:flex;align-items:flex-start;gap:9px;padding:11px 13px;border-radius:12px;margin-bottom:7px;font-size:12.5px;line-height:1.5;}
+.msg.ok  {background:rgba(16,185,129,.07); border-left:3px solid var(--ok);}
+.msg.warn{background:rgba(245,158,11,.07); border-left:3px solid var(--warn);}
+.msg.err {background:rgba(239,68,68,.07);  border-left:3px solid var(--err);}
+.msg.info{background:rgba(59,130,246,.07); border-left:3px solid var(--accent);}
+.msg-ico{font-size:14px;flex-shrink:0;margin-top:1px;}
+
+/* ── FILL RESULT ── */
+.fill-res{
+  background:linear-gradient(135deg,rgba(59,130,246,.15) 0%,rgba(139,92,246,.12) 50%,rgba(6,182,212,.10) 100%);
+  border:1px solid rgba(96,165,250,.3);
+  border-top:1px solid rgba(165,140,255,.35);
+  border-radius:18px;padding:24px;text-align:center;margin-bottom:12px;
+  box-shadow:0 0 40px rgba(59,130,246,.14),inset 0 1px 0 rgba(255,255,255,.09);
+}
+.fill-res-lbl{font-size:12px;color:var(--text2);margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;}
+.fill-res-big{
+  font-size:56px;font-weight:900;letter-spacing:-3px;
+  background:linear-gradient(120deg,#60A5FA,#06B6D4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.fill-res-unit{font-size:20px;color:var(--text2);}
+.fill-res-sub{font-size:11px;color:var(--text3);margin-top:10px;}
+
+/* ── PIPE SEGMENT ── */
+.pipe-seg{background:rgba(255,255,255,.04);border-radius:12px;padding:13px;margin-bottom:10px;border:1px solid var(--gb);}
+.pipe-seg-title{font-size:12px;font-weight:700;color:var(--accent3);margin-bottom:10px;}
+
+/* ── TABLES ── */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+.tbl th{background:rgba(255,255,255,.05);padding:10px 9px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);text-align:left;border-bottom:1px solid var(--gb);}
+.tbl td{padding:9px;border-bottom:1px solid rgba(255,255,255,.04);}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
+.tbl .hi{color:var(--accent2);font-weight:700;}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-g{background:rgba(16,185,129,.15);color:#34D399;}
+.badge-y{background:rgba(245,158,11,.15);color:#FBBF24;}
+.badge-r{background:rgba(239,68,68,.15); color:#F87171;}
+.badge-b{background:rgba(59,130,246,.15);color:#60A5FA;}
+
+/* ── CHECKLIST ── */
+.chk-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.chk-item:last-child{border-bottom:none;}
+.chk-num{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;margin-top:1px;
+  background:linear-gradient(135deg,#3B82F6,#06B6D4);
+  color:#fff;font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(59,130,246,.4);
+}
+.chk-txt{font-size:12.5px;line-height:1.6;color:var(--text2);}
+.chk-txt b{color:var(--text);}
+
+/* ── INFO SECTIONS ── */
+.info-sec{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.info-sec:last-child{border-bottom:none;}
+.info-title{font-size:13px;font-weight:700;margin-bottom:6px;}
+.info-title.ok  {color:var(--ok2);}
+.info-title.warn{color:var(--warn);}
+.info-title.err {color:var(--err);}
+.info-title.blue{color:var(--accent2);}
+ul.info-ul{padding-left:16px;}
+ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
+
+/* ── ROTALOCK TABLE ── */
+.rot-row{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.rot-row:last-child{border-bottom:none;}
+.rot-pos{font-size:13px;font-weight:700;margin-bottom:3px;}
+.rot-desc{font-size:12px;color:var(--text2);}
+
+/* ── INPUTS ── */
+.num-in{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--gb2);background:rgba(255,255,255,.06);color:var(--text);font-size:16px;font-weight:600;outline:none;}
+.lbl{display:block;font-size:12px;color:var(--text3);margin-bottom:5px;margin-top:10px;}
+
+/* DIVIDER */
+.div{height:1px;background:var(--gb);margin:10px 0;}
+
+/* SECTION TITLE */
+.sec-title{font-size:15px;font-weight:700;color:var(--text);margin:14px 0 8px;}
+
+/* OVERFLOW SCROLL FOR TABLES */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+/* ── MEASUREMENT ROWS ── */
+.mw-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.mw-row:last-of-type{border-bottom:none;}
+.mw-left{flex:1;min-width:0;}
+.mw-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;}
+.mw-soll{font-size:10px;color:var(--text3);margin-top:2px;}
+.mw-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.mw-entry{display:flex;align-items:baseline;gap:3px;}
+.mw-info{font-size:11px;color:var(--cyan);opacity:.85;}
+.mw-remove{
+  width:28px;height:28px;border-radius:50%;border:none;
+  background:rgba(239,68,68,.12);color:var(--err);
+  cursor:pointer;font-size:18px;line-height:1;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .15s;
+}
+.mw-remove:hover{background:rgba(239,68,68,.22);}
+
+/* ── ADD BUTTON ── */
+.add-btn{
+  width:100%;padding:12px;border-radius:11px;
+  border:1px dashed rgba(59,130,246,.35);
+  background:none;color:var(--accent2);font-size:13px;font-weight:600;
+  cursor:pointer;margin-top:10px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .18s;
+}
+.add-btn:hover{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.55);}
+.add-btn:active{transform:scale(.98);}
+.add-menu{
+  background:rgba(10,16,38,.92);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border-radius:13px;border:1px solid var(--gb2);
+  overflow:hidden;margin-top:6px;
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+}
+.add-item{
+  display:flex;align-items:center;width:100%;padding:13px 15px;
+  text-align:left;background:none;border:none;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  color:var(--text);font-size:13px;font-weight:500;cursor:pointer;
+  transition:background .15s;
+}
+.add-item:last-child{border-bottom:none;}
+.add-item:hover{background:rgba(59,130,246,.08);}
+.add-item-ico{width:20px;font-size:15px;margin-right:8px;}
+
+/* ═══ RESPONSIVE ═══ */
+
+/* ── Tablet ≥ 768px ── */
+@media (min-width:768px) {
+  .pages{max-width:820px;padding:20px 28px calc(var(--tab-h) + 20px);}
+  .hdr{padding:0 24px;}
+  .hdr-title{font-size:20px;}
+  .tab-btn{flex-direction:row;gap:8px;padding:8px 12px 16px;justify-content:center;}
+  .tab-btn span{font-size:12px;}
+  .tab-btn svg{width:18px;height:18px;}
+  .st-grid{grid-template-columns:repeat(3,1fr);}
+  .duo{grid-template-columns:repeat(4,1fr);}
+  .card{padding:20px;}
+  .fill-res-big{font-size:64px;}
+}
+
+/* ── Desktop ≥ 1080px ── */
+@media (min-width:1080px) {
+  html,body{height:100%;overflow:hidden;}
+  body{
+    display:grid;
+    grid-template-rows:54px 1fr;
+    grid-template-columns:240px 1fr;
+    overflow:hidden;
+  }
+  .hdr{
+    grid-column:1/3;grid-row:1;
+    position:static;height:54px;
+    padding:0 32px;
+  }
+  .tabs{
+    grid-column:1;grid-row:2;
+    position:static;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-start;
+    height:100%;
+    border-top:none;
+    border-right:1px solid var(--gb);
+    background:rgba(5,9,26,.75);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    padding:20px 12px;
+    gap:4px;
+    overflow-y:auto;
+  }
+  .tab-btn{
+    flex-direction:row;justify-content:flex-start;
+    flex:0 0 auto;
+    gap:12px;
+    padding:12px 16px;
+    border-radius:12px;
+    transition:all .18s;
+    color:var(--text3);
+  }
+  .tab-btn.on{
+    color:var(--accent2);
+    background:rgba(59,130,246,.14);
+    box-shadow:0 0 20px rgba(59,130,246,.1),inset 0 1px 0 rgba(255,255,255,.08);
+    border:1px solid rgba(59,130,246,.2);
+  }
+  .tab-btn:not(.on){border:1px solid transparent;}
+  .tab-btn:hover:not(.on){background:rgba(255,255,255,.04);color:var(--text2);border-color:rgba(255,255,255,.06);}
+  .tab-btn.on svg{filter:drop-shadow(0 0 5px rgba(96,165,250,.5));}
+  .tab-btn svg{width:20px;height:20px;}
+  .tab-btn span{font-size:13px;font-weight:600;}
+  .pages{
+    grid-column:2;grid-row:2;
+    height:100%;overflow-y:auto;
+    max-width:none;
+    padding:28px 44px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .page.on{max-width:900px;}
+  .st-grid{grid-template-columns:repeat(3,1fr);}
+  .duo{grid-template-columns:repeat(4,1fr);}
+  .card{padding:22px;}
+  .desktop-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;}
+  .desktop-2col>.card{margin-bottom:0;}
+  .fill-res-big{font-size:72px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="hdr">
+  <span class="hdr-title">❄ KältemittelPro</span>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="sel-wrap" style="margin:0;">
+      <select class="hdr-km" id="km-global" onchange="onKmChange()">
+        <option value="R32">R32</option>
+        <option value="R410A" selected>R410A</option>
+        <option value="R134a">R134a</option>
+        <option value="R404A">R404A</option>
+        <option value="R407C">R407C</option>
+        <option value="R448A">R448A</option>
+        <option value="R449A">R449A</option>
+        <option value="R22">R22</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ CONTENT ═══════════════ -->
+<div class="pages">
+
+  <!-- ══ PAGE 1: DIAGNOSE ══ -->
+  <div class="page on" id="pg-diagnose">
+
+    <!-- Einstellungen -->
+    <div class="card">
+      <div class="card-lbl">Einstellungen</div>
+      <div class="sel-wrap" style="margin-bottom:8px">
+        <select id="km-global" onchange="onKmChange()">
+          <option value="R32">R32</option>
+          <option value="R410A" selected>R410A</option>
+          <option value="R134a">R134a</option>
+          <option value="R404A">R404A</option>
+          <option value="R407C">R407C</option>
+          <option value="R448A">R448A</option>
+          <option value="R449A">R449A</option>
+          <option value="R22">R22</option>
+        </select>
+        <svg class="sel-arrow" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" width="16" height="16"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="seg" style="margin-bottom:8px">
+        <button class="seg-btn on" id="btn-cool" onclick="setModus('cool')">❄ Kühlen</button>
+        <button class="seg-btn" id="btn-heat" onclick="setModus('heat')">🔥 Heizen</button>
+      </div>
+      <div class="seg" style="margin-bottom:0">
+        <button class="seg-btn on" id="btn-wall" onclick="setGtype('wall')">📱 Wandgerät</button>
+        <button class="seg-btn" id="btn-cass" onclick="setGtype('cass')">⬛ Kassette</button>
+      </div>
+    </div>
+
+    <!-- Messwerte -->
+    <div class="card">
+      <div class="card-lbl">Messwerte — Wert antippen &amp; eingeben</div>
+
+      <!-- ND immer -->
+      <div class="mw-row">
+        <div class="mw-left">
+          <div class="mw-name" id="nd-name">Saugdruck (ND)</div>
+          <div class="mw-soll">Monteurhilfe blau</div>
+        </div>
+        <div class="mw-right">
+          <div class="mw-entry">
+            <input type="number" inputmode="decimal" class="val-in" id="nd-in"
+              value="8.0" min="0" max="22" step="0.1" oninput="onUpdate()">
+            <span class="sl-unit">bar</span>
+          </div>
+          <div class="mw-info">Verdampfungstemp: <span id="nd-tsat">—</span></div>
+        </div>
+      </div>
+
+      <!-- Ausblase immer -->
+      <div class="mw-row">
+        <div class="mw-left">
+          <div class="mw-name">Ausblastemperatur</div>
+          <div class="mw-soll" id="aus-soll-txt">Soll: 9–13°C (Wandgerät)</div>
+        </div>
+        <div class="mw-right">
+          <div class="mw-entry">
+            <input type="number" inputmode="decimal" class="val-in" id="aus-in"
+              value="11" min="-5" max="40" step="0.5" oninput="onUpdate()">
+            <span class="sl-unit">°C</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optionale Werte -->
+      <div id="opt-vals"></div>
+
+      <!-- + Button -->
+      <button class="add-btn" id="add-btn" onclick="toggleAddMenu()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Messwert hinzufügen
+      </button>
+      <div id="add-menu" style="display:none"></div>
+    </div>
+
+    <!-- Berechnete Werte (nur wenn vorhanden) -->
+    <div class="card" id="uh-card" style="display:none">
+      <div class="card-lbl">Berechnete Werte</div>
+      <div class="duo" style="margin-bottom:0" id="uh-duo"></div>
+    </div>
+
+    <!-- Statusanzeige -->
+    <div class="card">
+      <div class="card-lbl">Statusanzeige</div>
+      <div class="st-grid" id="st-grid"></div>
+    </div>
+
+    <!-- Diagnose -->
+    <div class="card">
+      <div class="card-lbl">Diagnose</div>
+      <div id="diag-out"></div>
+    </div>
+
+  </div><!-- /page diagnose -->
+
+  <!-- ══ PAGE: RICHTWERTE ══ -->
+  <div class="page" id="pg-richtwerte">
+
+    <div class="card">
+      <div class="card-lbl">Betriebspunkt eingeben</div>
+
+      <!-- Kältemittel-Auswahl direkt in Richtwerte -->
+      <div class="sel-wrap" style="margin-bottom:10px">
+        <select id="rv-km" onchange="rvKmChange()">
+          <option value="R32">R32</option>
+          <option value="R410A" selected>R410A</option>
+          <option value="R134a">R134a</option>
+          <option value="R404A">R404A</option>
+          <option value="R407C">R407C</option>
+          <option value="R448A">R448A</option>
+          <option value="R449A">R449A</option>
+          <option value="R22">R22</option>
+        </select>
+        <svg class="sel-arrow" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" width="16" height="16"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+
+      <div class="mw-row">
+        <div class="mw-left">
+          <div class="mw-name">Saugdruck (ND)</div>
+          <div class="mw-soll">Monteurhilfe blau</div>
+        </div>
+        <div class="mw-right">
+          <div class="mw-entry">
+            <input type="number" inputmode="decimal" class="val-in" id="rv-nd" value="8.0" min="0" max="30" step="0.1" oninput="renderRichtwerte()">
+            <span class="sl-unit">bar</span>
+          </div>
+          <div class="mw-info" id="rv-tsat">T_Verdampf.: —</div>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div class="seg" style="margin-bottom:8px">
+        <button class="seg-btn on" id="rv-cool" onclick="rvSetMode('cool')">❄ Kühlen</button>
+        <button class="seg-btn" id="rv-heat" onclick="rvSetMode('heat')">🔥 Heizen</button>
+      </div>
+      <div class="seg" style="margin-bottom:0">
+        <button class="seg-btn on" id="rv-wall" onclick="rvSetGtype('wall')">📱 Wandgerät</button>
+        <button class="seg-btn" id="rv-cass" onclick="rvSetGtype('cass')">⬛ Kassette</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Optimale Richtwerte — <span id="rv-km-lbl">R410A</span></div>
+      <div id="rv-cards"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Kältemittel-Infos</div>
+      <div id="rv-km-info"></div>
+    </div>
+
+  </div><!-- /page richtwerte -->
+
+  <!-- ══ PAGE 2: FÜLLRECHNER ══ -->
+  <div class="page" id="pg-fill">
+
+    <div class="card">
+      <div class="card-lbl">Gerät & Kältemittel</div>
+      <div class="seg">
+        <button class="seg-btn on" id="fill-single" onclick="setFillType('single')">Single Split</button>
+        <button class="seg-btn" id="fill-multi" onclick="setFillType('multi')">Multi Split</button>
+      </div>
+      <div id="fill-multi-ig" style="display:none;margin-bottom:10px;">
+        <div class="card-lbl" style="margin-bottom:6px">Anzahl Innengeräte</div>
+        <div class="seg">
+          <button class="seg-btn on" id="fill-ig2" onclick="setIG(2)">2 IG</button>
+          <button class="seg-btn" id="fill-ig3" onclick="setIG(3)">3 IG</button>
+          <button class="seg-btn" id="fill-ig4" onclick="setIG(4)">4 IG</button>
+        </div>
+      </div>
+      <div class="card-lbl" style="margin-bottom:6px">Kältemittel</div>
+      <div class="sel-wrap" style="margin-bottom:0">
+        <select id="fill-km" onchange="calcFill()">
+          <option value="R32">R32</option>
+          <option value="R410A" selected>R410A</option>
+          <option value="R134a">R134a</option>
+          <option value="R404A">R404A</option>
+          <option value="R407C">R407C</option>
+          <option value="R448A">R448A</option>
+          <option value="R449A">R449A</option>
+          <option value="R22">R22</option>
+        </select>
+        <svg class="sel-arrow" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" width="16" height="16"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Rohrleitungsdaten</div>
+      <div class="card-lbl" style="margin-bottom:6px">Rohrdurchmesser Flüssigkeitsleitung</div>
+      <div class="seg">
+        <button class="seg-btn" id="pipe-635" onclick="setPipe('6.35',15)">1/4"<br><small>6.35mm · 15g/m</small></button>
+        <button class="seg-btn on" id="pipe-952" onclick="setPipe('9.52',20)">3/8"<br><small>9.52mm · 20g/m</small></button>
+        <button class="seg-btn" id="pipe-127" onclick="setPipe('12.7',30)">1/2"<br><small>12.7mm · 30g/m</small></button>
+        <button class="seg-btn" id="pipe-1588" onclick="setPipe('15.88',45)">5/8"<br><small>15.88mm · 45g/m</small></button>
+      </div>
+      <div class="card-lbl" style="margin-bottom:6px;margin-top:10px;">Vorbeladungslänge Außengerät</div>
+      <div class="seg">
+        <button class="seg-btn on" id="pre-3" onclick="setPre(3)">3 m</button>
+        <button class="seg-btn" id="pre-5" onclick="setPre(5)">5 m</button>
+        <button class="seg-btn" id="pre-7" onclick="setPre(7)">7 m</button>
+        <button class="seg-btn" id="pre-10" onclick="setPre(10)">10 m</button>
+      </div>
+    </div>
+
+    <div class="card" id="fill-pipes-card">
+      <div class="card-lbl">Leitungslänge(n)</div>
+      <div id="fill-pipes"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Ergebnis</div>
+      <div class="fill-res">
+        <div class="fill-res-lbl">Zusätzlich nachzufüllen</div>
+        <div><span class="fill-res-big" id="fill-g">0</span><span class="fill-res-unit"> g</span></div>
+        <div class="fill-res-sub" id="fill-sub">Berechnung anzeigen</div>
+      </div>
+      <div class="msg info">
+        <span class="msg-ico">⚠️</span>
+        <span>Immer laut Typenschild befüllen! 20 g/m gilt als Standardwert für 3/8" Rohre. Angaben variieren je nach Hersteller.</span>
+      </div>
+      <div id="fill-method"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Hersteller Anschlussgrößen (typisch)</div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Leistung</th><th>Einspritz</th><th>Saugleitung</th><th>g/m</th></tr></thead>
+          <tbody>
+            <tr><td>≤2.5 kW</td><td>1/4" (6.35mm)</td><td>3/8" (9.52mm)</td><td class="hi">~15 g</td></tr>
+            <tr><td>3.5–5 kW</td><td>1/4" (6.35mm)</td><td>1/2" (12.7mm)</td><td class="hi">~20 g</td></tr>
+            <tr><td>7–9 kW</td><td>3/8" (9.52mm)</td><td>5/8" (15.88mm)</td><td class="hi">~30 g</td></tr>
+            <tr><td>12–14 kW</td><td>3/8" (9.52mm)</td><td>3/4" (19.05mm)</td><td class="hi">~40 g</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="div"></div>
+      <div class="card-lbl" style="margin-bottom:6px">Hersteller &amp; typische Vorbeladung</div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Hersteller</th><th>Vorbel.</th><th>Kältemittel</th></tr></thead>
+          <tbody>
+            <tr><td>Daikin</td><td>3 m</td><td>R32, R410A</td></tr>
+            <tr><td>Mitsubishi Electric</td><td>5 m</td><td>R32, R410A</td></tr>
+            <tr><td>Samsung</td><td>5 m</td><td>R32, R410A</td></tr>
+            <tr><td>LG</td><td>5 m</td><td>R32, R410A</td></tr>
+            <tr><td>Panasonic</td><td>5 m</td><td>R32, R410A</td></tr>
+            <tr><td>Fujitsu/General</td><td>5 m</td><td>R32, R410A</td></tr>
+            <tr><td>Toshiba/Carrier</td><td>5 m</td><td>R32, R410A</td></tr>
+            <tr><td>Gree/Midea/Haier</td><td>3–5 m</td><td>R32, R410A</td></tr>
+            <tr><td>Bosch/Viessmann</td><td>5 m</td><td>R32</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /page fill -->
+
+  <!-- ══ PAGE 3: p-T TABELLEN ══ -->
+  <div class="page" id="pg-tables">
+
+    <div class="card">
+      <div class="card-lbl">Kältemittel wählen</div>
+      <div class="sel-wrap">
+        <select id="tbl-km" onchange="renderPT()">
+          <option value="R32">R32</option>
+          <option value="R410A" selected>R410A</option>
+          <option value="R134a">R134a</option>
+          <option value="R404A">R404A</option>
+          <option value="R407C">R407C</option>
+          <option value="R448A">R448A</option>
+          <option value="R449A">R449A</option>
+          <option value="R22">R22</option>
+        </select>
+        <svg class="sel-arrow" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" width="16" height="16"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl" id="pt-tbl">
+          <thead><tr><th>Temp (°C)</th><th>Druck (bar)</th><th>Bereich</th></tr></thead>
+          <tbody id="pt-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Kältemittel Eigenschaften</div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>KM</th><th>GWP</th><th>Sdp.</th><th>Klasse</th><th>Füllung</th></tr></thead>
+          <tbody>
+            <tr><td>R32</td><td><span class="badge badge-g">675</span></td><td>−51.7°C</td><td>A2L</td><td>beliebig</td></tr>
+            <tr><td>R410A</td><td><span class="badge badge-y">2088</span></td><td>−51.5°C</td><td>A1</td><td>auf Kopf</td></tr>
+            <tr><td>R134a</td><td><span class="badge badge-y">1430</span></td><td>−26.1°C</td><td>A1</td><td>beliebig</td></tr>
+            <tr><td>R404A</td><td><span class="badge badge-r">3922</span></td><td>−46.6°C</td><td>A1</td><td>auf Kopf</td></tr>
+            <tr><td>R407C</td><td><span class="badge badge-y">1774</span></td><td>−43.8°C</td><td>A1</td><td>auf Kopf</td></tr>
+            <tr><td>R448A</td><td><span class="badge badge-g">1273</span></td><td>−45.9°C</td><td>A1</td><td>auf Kopf</td></tr>
+            <tr><td>R449A</td><td><span class="badge badge-g">1282</span></td><td>−46.0°C</td><td>A1</td><td>auf Kopf</td></tr>
+            <tr><td>R22</td><td><span class="badge badge-r">1810</span></td><td>−40.8°C</td><td>A1 ⚠️</td><td>beliebig</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Richtwerte Kühlbetrieb (bei ~20–22°C Außentemp.)</div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Messgröße</th><th>Optimal</th><th>Achtung</th></tr></thead>
+          <tbody>
+            <tr><td>Saugleitung</td><td class="hi">10–15°C</td><td>&lt;5°C / &gt;20°C</td></tr>
+            <tr><td>Einspritzleitung</td><td class="hi">12–18°C</td><td>&lt;7°C / &gt;25°C</td></tr>
+            <tr><td>Ausblase Wandgerät</td><td class="hi">9–13°C</td><td>&lt;5°C / &gt;18°C</td></tr>
+            <tr><td>Ausblase Kassette</td><td class="hi">11–17°C</td><td>&lt;7°C / &gt;20°C</td></tr>
+            <tr><td>Verdichterend</td><td class="hi">55–75°C</td><td>&lt;45°C / &gt;100°C</td></tr>
+            <tr><td>Überhitzung</td><td class="hi">5–8 K</td><td>&lt;2 K / &gt;15 K</td></tr>
+            <tr><td>Unterkühlung</td><td class="hi">2–3 K</td><td>&lt;0 K / &gt;10 K</td></tr>
+            <tr><td>Saugdruck (R32)</td><td class="hi">6–9 bar</td><td>&lt;5 / &gt;11 bar</td></tr>
+            <tr><td>Saugdruck (R410A)</td><td class="hi">7–11 bar</td><td>&lt;6 / &gt;13 bar</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /page tables -->
+
+  <!-- ══ PAGE 4: INFO & CHECKLISTE ══ -->
+  <div class="page" id="pg-info">
+
+    <div class="card">
+      <div class="card-lbl">Inbetriebnahme Checkliste</div>
+      <div id="ibn-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Kältemittel ins AG zurücksaugen</div>
+      <div id="recovery-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Störungsdiagnose</div>
+      <div class="info-sec">
+        <div class="info-title err">⛔ Überfüllung erkennen</div>
+        <ul class="info-ul">
+          <li>Saugdruck bleibt konstant über 10 bar</li>
+          <li>Verdichter-Geräuschpegel sehr laut</li>
+          <li>Ausblastemperatur zu hoch</li>
+          <li>Verdichterendtemperatur auffällig niedrig (z.B. normal 90°C → bei Überfüllung nur 70°C)</li>
+        </ul>
+      </div>
+      <div class="info-sec">
+        <div class="info-title warn">⚠️ KM-Mangel erkennen</div>
+        <ul class="info-ul">
+          <li>Saugdruck fällt extrem ab</li>
+          <li>Hochdruck bleibt konstant oder fällt auch</li>
+          <li>Tiefer ND <b>und</b> tiefer HD = KM-Mangel</li>
+          <li>Saugleitung wärmer als Einspritzleitung</li>
+          <li>Einspritzleitung vereist → Expansionsventil, Walze defekt, KM zu wenig</li>
+          <li>Im Winter: KM im AG → Bypass Monteurhilfe (Heißgas in Saugleitung)</li>
+        </ul>
+      </div>
+      <div class="info-sec">
+        <div class="info-title blue">🔬 KM-Mangel vs. E-Ventil Defekt</div>
+        <ul class="info-ul">
+          <li>KM-Mangel: ND fällt, HD fällt auch</li>
+          <li>E-Ventil/Lüfter-Defekt: ND fällt, HD steigt schnell</li>
+          <li>Defekte Platine, verschmutzter Verflüssiger → ähnliche Symptome wie KM-Mangel</li>
+        </ul>
+      </div>
+      <div class="info-sec">
+        <div class="info-title" style="color:var(--text2)">📋 Mögliche Fehlerquellen</div>
+        <ul class="info-ul">
+          <li>KM-Mangel durch Undichtigkeit</li>
+          <li>Fehlendes KM bei langen Rohrleitungen</li>
+          <li>Defektes / defekte Spule Expansionsventil</li>
+          <li>Defekte Platine</li>
+          <li>Verflüssiger verschmutzt</li>
+          <li>Defekter Verflüssiger-Lüfter</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Rotalockventil Stellungen</div>
+      <div class="rot-row">
+        <div class="rot-pos" style="color:var(--ok)">Rücksitz (vollständig hochgeschraubt)</div>
+        <div class="rot-desc">Arbeitsbetrieb · Saugdruck/Heißgas Durchgang <b>offen</b> · Service-Ventil <b>geschlossen</b></div>
+      </div>
+      <div class="rot-row">
+        <div class="rot-pos" style="color:var(--warn)">Mittelstellung</div>
+        <div class="rot-desc">Service + Saugdruck/Heißgas beide <b>offen</b> (Servicestellung)</div>
+      </div>
+      <div class="rot-row">
+        <div class="rot-pos" style="color:var(--err)">Frontsitz (vollständig runtergeschraubt)</div>
+        <div class="rot-desc">Öffnet Weg zum <b>Verdichter</b> und <b>Serviceventil</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Verdichter / Platine prüfen</div>
+      <div class="info-sec">
+        <div class="info-title blue">Inverter-Platine messen</div>
+        <ul class="info-ul">
+          <li>Widerstandsmessung: L1&amp;L2, L1&amp;L3, L3&amp;L2 → Soll ca. 1.1–1.3 Ω</li>
+          <li>0 Ω = Kurzschluss, Wicklung defekt</li>
+          <li>L1/L2/L3 gegen Erde: kein ∞ Widerstand = defekt</li>
+          <li>Hand auf Verdichter: Geräusche/Vibrationen bei Anlauf</li>
+        </ul>
+      </div>
+      <div class="info-sec">
+        <div class="info-title blue">Klimagerät demontieren</div>
+        <ul class="info-ul">
+          <li>Einspritzleitung schließen</li>
+          <li>Monteurhilfe an Saugleitung anschließen</li>
+          <li>Verdichter anlaufen lassen, Saugseiten-Druck beobachten</li>
+          <li>Unter 0 bar → Saugleitung schnell schließen</li>
+          <li>Bei Wärmepumpe: ND- und HD-Schalter vorher überbrücken</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Gerät bei ungewisser KM-Menge füllen</div>
+      <ul class="info-ul" style="padding:4px 0 4px 16px;">
+        <li>Monteurhilfe an Saugleitung anschließen</li>
+        <li>Anlegefühler an Saugleitung anlegen</li>
+        <li>Ausblastemperatur am Innengerät messen</li>
+        <li>Füllmenge laut Typenschild einfüllen</li>
+        <li>Werte bei ca. 20–22°C Außentemperatur</li>
+      </ul>
+      <div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);">
+        Single Split: <b>~1 kg KM</b> · Multi Split: <b>~1.5–2 kg KM</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">Wartungshinweis</div>
+      <div class="msg warn">
+        <span class="msg-ico">⚠️</span>
+        <span><b>Keine Monteurhilfe anschließen bei Wartung</b> — führt nach einiger Zeit zu KM-Mangel! Nur Anlegefühler verwenden.</span>
+      </div>
+      <ul class="info-ul" style="padding:4px 0 4px 16px;">
+        <li>Einspritzleitung am AG <b>wärmer</b> als Saugleitung = normal</li>
+        <li>Saugleitung wärmer als Einspritzleitung → KM verdampft zu früh (AG-Austritt)</li>
+        <li>Überhitzung zu groß → KM kommt an Saugleitung mit höherer Temperatur zurück</li>
+      </ul>
+    </div>
+
+  </div><!-- /page info -->
+
+</div><!-- /pages -->
+
+<!-- ═══════════════ BOTTOM TABS ═══════════════ -->
+<nav class="tabs">
+  <button class="tab-btn on" id="tab-diagnose" onclick="showPage('diagnose')">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>Diagnose</span>
+  </button>
+  <button class="tab-btn" id="tab-richtwerte" onclick="showPage('richtwerte')">
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Richtwerte</span>
+  </button>
+  <button class="tab-btn" id="tab-fill" onclick="showPage('fill')">
+    <svg viewBox="0 0 24 24"><path d="M3 20h18M8 20V10l4-8 4 8v10"/></svg>
+    <span>Füllung</span>
+  </button>
+  <button class="tab-btn" id="tab-tables" onclick="showPage('tables')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+    <span>Tabellen</span>
+  </button>
+  <button class="tab-btn" id="tab-info" onclick="showPage('info')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>Info</span>
+  </button>
+</nav>
+
+<script>
+// ═══════════════════════════════════════════════
+// SATURATION DATA (T in °C → P in bar absolute)
+// Source: ASHRAE / engineering tables
+// ═══════════════════════════════════════════════
+const SAT = {
+  R32: {
+    T: [-50,-40,-30,-20,-10,  0,  5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+    P: [0.80,1.59,2.41,3.53,5.01,6.91,8.03,9.35,10.87,12.49,14.30,16.33,18.56,21.02,23.73,26.72,30.01,33.60]
+  },
+  R410A: {
+    T: [-40,-30,-20,-10,  0,  5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+    P: [2.34,3.55,5.19,7.36,10.17,11.79,13.59,15.58,17.78,20.20,22.86,25.78,28.96,32.43,36.21]
+  },
+  R134a: {
+    T: [-40,-30,-20,-10,  0,  5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70],
+    P: [0.51,0.84,1.33,2.01,2.93,3.49,4.15,4.91,5.79,6.80,7.93,9.21,10.64,12.24,14.00,15.95,18.09,23.17]
+  },
+  R404A: {
+    T: [-40,-30,-20,-10,  0,  5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+    P: [2.08,3.15,4.61,6.55,9.04,10.48,12.11,13.93,15.97,18.24,20.75,23.53,26.58,29.94,33.62]
+  },
+  R407C: {
+    T: [-40,-30,-20,-10,  0,  5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+    P: [1.58,2.47,3.70,5.33,7.44,8.65,10.01,11.53,13.23,15.12,17.22,19.54,22.11,24.93,28.04]
+  },
+  R448A: {
+    T: [-40,-30,-20,-10,  0,  5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+    P: [2.02,3.04,4.43,6.26,8.62,9.96,11.48,13.18,15.07,17.17,19.51,22.08,24.92,28.04,31.46]
+  },
+  R449A: {
+    T: [-40,-30,-20,-10,  0,  5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+    P: [2.04,3.09,4.51,6.39,8.79,10.17,11.72,13.45,15.38,17.52,19.90,22.52,25.42,28.61,32.11]
+  },
+  R22: {
+    T: [-40,-30,-20,-10,  0,  5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+    P: [1.06,1.64,2.46,3.55,4.97,5.83,6.80,7.89,9.10,10.44,11.92,13.55,15.33,17.29,19.42,21.76,24.29]
+  }
+};
+
+// Interpolation: pressure → temperature
+function pressToTemp(km, bar) {
+  const d = SAT[km]; if (!d) return null;
+  if (bar <= d.P[0]) return d.T[0];
+  if (bar >= d.P[d.P.length-1]) return d.T[d.T.length-1];
+  for (let i = 0; i < d.P.length-1; i++) {
+    if (bar >= d.P[i] && bar <= d.P[i+1]) {
+      const r = (bar - d.P[i]) / (d.P[i+1] - d.P[i]);
+      return d.T[i] + r * (d.T[i+1] - d.T[i]);
+    }
+  }
+  return null;
+}
+
+// Interpolation: temperature → pressure
+function tempToPress(km, temp) {
+  const d = SAT[km]; if (!d) return null;
+  if (temp <= d.T[0]) return d.P[0];
+  if (temp >= d.T[d.T.length-1]) return d.P[d.T.length-1];
+  for (let i = 0; i < d.T.length-1; i++) {
+    if (temp >= d.T[i] && temp <= d.T[i+1]) {
+      const r = (temp - d.T[i]) / (d.T[i+1] - d.T[i]);
+      return d.P[i] + r * (d.P[i+1] - d.P[i]);
+    }
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let state = {
+  km: 'R410A', modus: 'cool', gtype: 'wall'
+};
+let activeOpts = {}; // id → true for active optional values
+let addMenuOpen = false;
+
+let fillState = {
+  type: 'single', ig: 2, km: 'R410A',
+  pipe: '9.52', gpm: 20, pre: 3,
+  lengths: [10]
+};
+
+// Optional value definitions
+const OPT_DEFS = {
+  hd:   { name: 'Hochdruck (HD)',                ico:'🔴', unit:'bar', min:0,   max:50,  step:0.1, def:22.0, soll:'Monteurhilfe rot' },
+  sug:  { name: 'Saugleitung Anliegetemp.',       ico:'🌡', unit:'°C', min:-20, max:40,  step:0.5, def:12,   soll:'Soll: 10–15°C (Kühlbetrieb)' },
+  esp:  { name: 'Einspritz-/Flüssigkeitsleitg.', ico:'🌡', unit:'°C', min:-20, max:50,  step:0.5, def:15,   soll:'Soll: 12–18°C (Kühlbetrieb)' },
+  verd: { name: 'Verdichterendtemperatur',        ico:'🔥', unit:'°C', min:20,  max:130, step:1,   def:65,   soll:'Soll: 55–75°C' },
+};
+
+// ═══════════════════════════════════════════════
+// PAGE NAVIGATION
+// ═══════════════════════════════════════════════
+function showPage(p) {
+  ['diagnose','richtwerte','fill','tables','info'].forEach(id => {
+    document.getElementById('pg-'+id).classList.remove('on');
+    document.getElementById('tab-'+id).classList.remove('on');
+  });
+  document.getElementById('pg-'+p).classList.add('on');
+  document.getElementById('tab-'+p).classList.add('on');
+  if (p === 'tables') renderPT();
+  if (p === 'info') renderInfo();
+  if (p === 'richtwerte') renderRichtwerte();
+}
+
+// ═══════════════════════════════════════════════
+// DIAGNOSE PAGE
+// ═══════════════════════════════════════════════
+function onKmChange() {
+  state.km = document.getElementById('km-global').value;
+  document.getElementById('fill-km').value = state.km;
+  document.getElementById('tbl-km').value = state.km;
+  onUpdate();
+  renderRichtwerte();
+}
+
+function setModus(m) {
+  state.modus = m;
+  document.getElementById('btn-cool').classList.toggle('on', m==='cool');
+  document.getElementById('btn-heat').classList.toggle('on', m==='heat');
+  updateSollTexts();
+  onUpdate();
+}
+
+function setGtype(t) {
+  state.gtype = t;
+  document.getElementById('btn-wall').classList.toggle('on', t==='wall');
+  document.getElementById('btn-cass').classList.toggle('on', t==='cass');
+  updateSollTexts();
+  onUpdate();
+}
+
+function updateSollTexts() {
+  const cool = state.modus === 'cool';
+  const cass = state.gtype === 'cass';
+  const ausRange = cass ? (cool ? '11–17°C' : '30–45°C') : (cool ? '9–13°C' : '30–45°C');
+  document.getElementById('aus-soll-txt').textContent = 'Soll: ' + ausRange;
+  const ndName = document.getElementById('nd-name');
+  if (ndName) ndName.textContent = cool ? 'Saugdruck (ND)' : 'Niederdruck (ND)';
+}
+
+// ── ADD / REMOVE OPTIONAL VALUES ──
+function toggleAddMenu() {
+  addMenuOpen = !addMenuOpen;
+  const menu = document.getElementById('add-menu');
+  const btn = document.getElementById('add-btn');
+  if (addMenuOpen) {
+    const remaining = Object.entries(OPT_DEFS).filter(([id]) => !activeOpts[id]);
+    if (remaining.length === 0) {
+      menu.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:var(--text3)">Alle Messwerte bereits hinzugefügt</div>';
+    } else {
+      menu.innerHTML = '<div class="add-menu">' + remaining.map(([id, d]) =>
+        `<button class="add-item" onclick="addVal('${id}')"><span class="add-item-ico">${d.ico}</span>${d.name}<span style="margin-left:auto;font-size:11px;color:var(--text3)">${d.unit}</span></button>`
+      ).join('') + '</div>';
+    }
+    menu.style.display = 'block';
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg> Abbrechen';
+  } else {
+    menu.style.display = 'none';
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Messwert hinzufügen';
+  }
+}
+
+function addVal(id) {
+  activeOpts[id] = true;
+  addMenuOpen = false;
+  document.getElementById('add-menu').style.display = 'none';
+  document.getElementById('add-btn').innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Messwert hinzufügen';
+  renderOptVals();
+  onUpdate();
+}
+
+function removeVal(id) {
+  delete activeOpts[id];
+  renderOptVals();
+  onUpdate();
+}
+
+function renderOptVals() {
+  const cont = document.getElementById('opt-vals');
+  const ids = Object.keys(activeOpts);
+  if (!ids.length) { cont.innerHTML = ''; return; }
+  cont.innerHTML = ids.map(id => {
+    const d = OPT_DEFS[id];
+    const extra = id === 'hd'
+      ? `<div class="mw-info">Verflüssigungstemp: <span id="hd-tsat">—</span></div>`
+      : '';
+    return `
+      <div class="mw-row" id="opt-row-${id}">
+        <div class="mw-left">
+          <div class="mw-name">${d.ico} ${d.name}</div>
+          <div class="mw-soll">${d.soll}</div>
+        </div>
+        <div class="mw-right">
+          <div class="mw-entry">
+            <input type="number" inputmode="${d.step>=1?'numeric':'decimal'}" class="val-in"
+              id="${id}-in" value="${d.def}" min="${d.min}" max="${d.max}" step="${d.step}"
+              oninput="onUpdate()">
+            <span class="sl-unit">${d.unit}</span>
+          </div>
+          ${extra}
+        </div>
+        <button class="mw-remove" onclick="removeVal('${id}')" title="Entfernen">×</button>
+      </div>`;
+  }).join('');
+}
+
+function getVal(id) {
+  const el = document.getElementById(id+'-in');
+  if (!el) return null;
+  const v = parseFloat(el.value);
+  return isNaN(v) ? null : v;
+}
+
+function onUpdate() {
+  const nd  = getVal('nd')  ?? 0;
+  const aus = getVal('aus') ?? 0;
+  const hd   = activeOpts.hd   ? getVal('hd')   : null;
+  const sug  = activeOpts.sug  ? getVal('sug')  : null;
+  const esp  = activeOpts.esp  ? getVal('esp')  : null;
+  const verd = activeOpts.verd ? getVal('verd') : null;
+
+  const tnd = pressToTemp(state.km, nd);
+  const thd = hd !== null ? pressToTemp(state.km, hd) : null;
+
+  // Update saturation displays
+  const ndTsEl = document.getElementById('nd-tsat');
+  if (ndTsEl) ndTsEl.textContent = tnd !== null ? tnd.toFixed(1)+'°C' : '—';
+  const hdTsEl = document.getElementById('hd-tsat');
+  if (hdTsEl && thd !== null) hdTsEl.textContent = thd.toFixed(1)+'°C';
+
+  // Calculated values
+  const uh = (sug !== null && tnd !== null) ? sug - tnd : null;
+  const uk = (esp !== null && thd !== null) ? thd - esp : null;
+
+  // Show/hide calc card
+  const uhCard = document.getElementById('uh-card');
+  if (uh !== null || uk !== null) {
+    uhCard.style.display = 'block';
+    let html = '';
+    if (uh !== null) {
+      const c = uh>=5&&uh<=8?'var(--ok)':uh>=3&&uh<=15?'var(--warn)':'var(--err)';
+      html += `<div class="duo-card"><div class="duo-lbl">Überhitzung</div><div class="duo-val" style="color:${c}">${uh.toFixed(1)}</div><div class="duo-unit">K</div><div class="duo-range">Soll: 5–8 K</div></div>`;
+    }
+    if (uk !== null) {
+      const c = uk>=2&&uk<=5?'var(--ok)':uk>=0&&uk<=10?'var(--warn)':'var(--err)';
+      html += `<div class="duo-card"><div class="duo-lbl">Unterkühlung</div><div class="duo-val" style="color:${c}">${uk.toFixed(1)}</div><div class="duo-unit">K</div><div class="duo-range">Soll: 2–3 K</div></div>`;
+    }
+    document.getElementById('uh-duo').innerHTML = html;
+  } else {
+    uhCard.style.display = 'none';
+  }
+
+  renderStatus(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk);
+  renderDiagnose(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk);
+}
+
+function statusClass(v, ok1, ok2, warn1, warn2) {
+  if (v >= ok1 && v <= ok2) return 'ok';
+  if (v >= warn1 && v <= warn2) return 'warn';
+  return 'err';
+}
+
+function renderStatus(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk) {
+  const cool = state.modus === 'cool';
+  const cass = state.gtype === 'cass';
+  const items = [];
+
+  // Always: ND
+  items.push({ lbl:'ND-Druck', val:nd.toFixed(1)+' bar',
+    range: cool ? '6–11 bar' : '3–8 bar',
+    cls: cool ? statusClass(nd,6,11,4,13) : statusClass(nd,3,8,2,10) });
+
+  // Always: Ausblase
+  if (cool) {
+    const ausOk = cass ? [11,17] : [9,13];
+    const ausWarn = cass ? [8,20] : [7,16];
+    items.push({ lbl:'Ausblase', val:aus.toFixed(1)+'°C', range:ausOk[0]+'–'+ausOk[1]+'°C', cls:statusClass(aus,ausOk[0],ausOk[1],ausWarn[0],ausWarn[1]) });
+  } else {
+    items.push({ lbl:'Ausblase', val:aus.toFixed(1)+'°C', range:'30–45°C', cls:statusClass(aus,30,45,25,50) });
+  }
+
+  // Optional: HD
+  if (hd !== null) items.push({ lbl:'HD-Druck', val:hd.toFixed(1)+' bar',
+    range: cool ? '16–28 bar' : '18–30 bar',
+    cls: cool ? statusClass(hd,16,28,12,35) : statusClass(hd,18,30,14,38) });
+
+  // Optional: Saugleitung
+  if (sug !== null) items.push({ lbl:'Saugleitung', val:sug.toFixed(1)+'°C',
+    range: cool ? '10–15°C' : '2–8°C',
+    cls: cool ? statusClass(sug,10,15,7,20) : statusClass(sug,2,8,-5,12) });
+
+  // Optional: Einspritzleitung
+  if (esp !== null) items.push({ lbl:'Einspritzleitg.', val:esp.toFixed(1)+'°C', range:'12–18°C', cls:statusClass(esp,12,18,9,22) });
+
+  // Optional: Verdichterend
+  if (verd !== null) items.push({ lbl:'Verdichterend', val:Math.round(verd)+'°C', range:'55–75°C', cls:statusClass(verd,55,75,45,90) });
+
+  // Calculated: Überhitzung
+  if (uh !== null) items.push({ lbl:'Überhitzung', val:uh.toFixed(1)+' K', range:'5–8 K', cls:statusClass(uh,5,8,3,15) });
+  if (uk !== null) items.push({ lbl:'Unterkühlung', val:uk.toFixed(1)+' K', range:'2–3 K', cls:statusClass(uk,2,5,0,10) });
+
+  const grid = document.getElementById('st-grid');
+  grid.innerHTML = items.map(it => `
+    <div class="st-card ${it.cls}">
+      <div class="st-lbl"><span class="dot"></span>${it.lbl}</div>
+      <div class="st-val">${it.val}</div>
+      <div class="st-range">Soll: ${it.range}</div>
+    </div>`).join('');
+}
+
+function renderDiagnose(nd, hd, sug, esp, aus, verd, tnd, thd, uh, uk) {
+  const cool = state.modus === 'cool';
+  const msgs = [];
+
+  if (cool) {
+    // Overall system OK?
+    const allOk = sug>=10&&sug<=15 && esp>=12&&esp<=18 && verd>=55&&verd<=75 && (uh===null||(uh>=5&&uh<=8)) && nd>=6&&nd<=11;
+    if (allOk) msgs.push({cls:'ok', ico:'✅', txt:'<b>System OK</b> — Alle Messwerte im optimalen Bereich.'});
+
+    // KM Mangel (ND allein oder ND+HD)
+    if (hd !== null && nd < 5 && hd < 14) msgs.push({cls:'err', ico:'🔴', txt:'<b>KM-Mangel wahrscheinlich!</b> ND und HD beide niedrig. → Lecks suchen, nachfüllen.'});
+    else if (nd < 5) msgs.push({cls:'err', ico:'🔴', txt:'<b>ND zu niedrig!</b> Möglicher KM-Mangel. HD hinzufügen für genauere Diagnose.'});
+
+    // Überfüllung
+    if (nd > 12 && verd !== null && verd < 60) msgs.push({cls:'err', ico:'⛔', txt:'<b>Überfüllung Verdacht!</b> ND sehr hoch, Verdichtertemp. niedrig. → KM ablassen.'});
+    else if (nd > 12) msgs.push({cls:'warn', ico:'🟡', txt:'<b>ND erhöht.</b> Bei lauten Verdichtergeräuschen → Überfüllung prüfen.'});
+
+    // Saugleitung (nur wenn vorhanden)
+    if (sug !== null && sug < 5) msgs.push({cls:'err', ico:'🔴', txt:'<b>Saugleitung zu kalt!</b> Möglicher KM-Mangel oder E-Ventil defekt.'});
+    else if (sug !== null && sug > 20) msgs.push({cls:'err', ico:'🔴', txt:'<b>Saugleitung zu warm!</b> KM verdampft zu früh. → KM-Menge prüfen.'});
+
+    // Einspritzleitung vs. Saugleitung (nur wenn beide vorhanden)
+    if (sug !== null && esp !== null && sug > esp) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Saugleitung wärmer als Einspritzleitung!</b> KM verdampft zu früh am AG-Austritt. → KM-Mangel oder E-Ventil prüfen.'});
+
+    // Überhitzung
+    if (uh !== null) {
+      if (uh < 2) msgs.push({cls:'err', ico:'🔴', txt:'<b>Überhitzung zu klein (' + uh.toFixed(1) + ' K)!</b> Flüssiges KM könnte in Verdichter gelangen. → Füllmenge reduzieren oder E-Ventil prüfen.'});
+      else if (uh < 4) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Überhitzung gering (' + uh.toFixed(1) + ' K).</b> Soll: 5–8 K. Etwas KM ablassen.'});
+      else if (uh > 15) msgs.push({cls:'err', ico:'🔴', txt:'<b>Überhitzung zu groß (' + uh.toFixed(1) + ' K)!</b> KM-Mangel oder E-Ventil öffnet zu wenig.'});
+      else if (uh > 10) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Überhitzung erhöht (' + uh.toFixed(1) + ' K).</b> Soll: 5–8 K. KM-Menge prüfen.'});
+    }
+
+    // Unterkühlung
+    if (uk !== null && uk < 0) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Keine Unterkühlung (' + uk.toFixed(1) + ' K).</b> Flashgas möglich → Schauglas prüfen.'});
+
+    // Verdichtertemp (nur wenn vorhanden)
+    if (verd !== null && verd > 100) msgs.push({cls:'err', ico:'🔴', txt:'<b>Verdichterendtemperatur kritisch (' + Math.round(verd) + '°C)!</b> Kühlbedingungen prüfen, Überhitzung reduzieren.'});
+    else if (verd !== null && verd < 45) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Verdichterendtemperatur sehr niedrig (' + Math.round(verd) + '°C).</b> Normal ~60–90°C → Überfüllung prüfen.'});
+
+    // Ausblase
+    const ausMax = state.gtype === 'cass' ? 17 : 13;
+    const ausMin = state.gtype === 'cass' ? 11 : 9;
+    if (aus > ausMax+4) msgs.push({cls:'err', ico:'🔴', txt:'<b>Ausblastemperatur zu hoch (' + aus.toFixed(1) + '°C)!</b> Prüfen: Überfüllung, Verdampfer verschmutzt, Lüfter.'});
+    else if (aus < ausMin-3) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Ausblastemperatur niedrig (' + aus.toFixed(1) + '°C).</b> Innenfilter prüfen, Luftstrom ok?'});
+
+  } else {
+    // Heizbetrieb
+    if (verd > 100) msgs.push({cls:'err', ico:'🔴', txt:'<b>Verdichterendtemperatur kritisch im Heizbetrieb!</b>'});
+    if (nd < 2) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>ND sehr niedrig.</b> Außentemperatur sehr kalt oder KM-Mangel?'});
+    if (aus < 25) msgs.push({cls:'warn', ico:'⚠️', txt:'<b>Ausblastemperatur Heizung niedrig.</b> Anlage hat Heizbetrieb korrekt erkannt?'});
+    msgs.push({cls:'info', ico:'ℹ️', txt:'Heizbetrieb: Verdampfer ist im Außengerät. Heißgas zur Inneneinheit (groß = Heißgasleitung).'});
+  }
+
+  if (msgs.length === 0) msgs.push({cls:'info', ico:'ℹ️', txt:'Alle eingegebenen Werte im Normalbereich. Weitere Messwerte per <b>+</b> hinzufügen für detailliertere Diagnose.'});
+
+  document.getElementById('diag-out').innerHTML = msgs.map(m =>
+    `<div class="msg ${m.cls}"><span class="msg-ico">${m.ico}</span><span>${m.txt}</span></div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════
+// FILL CALCULATOR
+// ═══════════════════════════════════════════════
+function setFillType(t) {
+  fillState.type = t;
+  document.getElementById('fill-single').classList.toggle('on', t==='single');
+  document.getElementById('fill-multi').classList.toggle('on', t==='multi');
+  document.getElementById('fill-multi-ig').style.display = t==='multi' ? 'block' : 'none';
+  if (t === 'single') fillState.lengths = [fillState.lengths[0] || 10];
+  else { while (fillState.lengths.length < fillState.ig) fillState.lengths.push(10); }
+  renderPipes();
+  calcFill();
+}
+
+function setIG(n) {
+  fillState.ig = n;
+  [2,3,4].forEach(i => document.getElementById('fill-ig'+i).classList.toggle('on', i===n));
+  while (fillState.lengths.length < n) fillState.lengths.push(10);
+  fillState.lengths = fillState.lengths.slice(0, n);
+  renderPipes();
+  calcFill();
+}
+
+function setPipe(d, gpm) {
+  fillState.pipe = d; fillState.gpm = gpm;
+  ['635','952','127','1588'].forEach(id => document.getElementById('pipe-'+id).classList.remove('on'));
+  document.getElementById('pipe-'+d.replace('.','')).classList.add('on');
+  calcFill();
+}
+
+function setPre(p) {
+  fillState.pre = p;
+  [3,5,7,10].forEach(v => document.getElementById('pre-'+v).classList.toggle('on', v===p));
+  calcFill();
+}
+
+function renderPipes() {
+  const n = fillState.type === 'single' ? 1 : fillState.ig;
+  const html = Array.from({length:n}, (_, i) => `
+    <div class="pipe-seg">
+      <div class="pipe-seg-title">${n>1 ? 'Strang '+(i+1) : 'Rohrleitungslänge'}</div>
+      <div class="sl-top">
+        <span class="sl-name">Länge</span>
+        <div style="display:flex;align-items:baseline">
+          <input type="number" inputmode="decimal" class="val-in" id="pl-in-${i}"
+            value="${fillState.lengths[i]||10}" min="1" max="50" step="0.5"
+            oninput="onPipeIn(${i})">
+          <span class="sl-unit"> m</span>
+        </div>
+      </div>
+      <input type="range" id="pl-sl-${i}" min="1" max="50" step="0.5"
+        value="${fillState.lengths[i]||10}"
+        oninput="onPipeSlide(${i})">
+    </div>`).join('');
+  document.getElementById('fill-pipes').innerHTML = html;
+}
+
+function onPipeIn(i) {
+  let v = parseFloat(document.getElementById('pl-in-'+i).value);
+  if (isNaN(v)) return;
+  v = Math.min(50, Math.max(1, v));
+  fillState.lengths[i] = v;
+  document.getElementById('pl-sl-'+i).value = v;
+  calcFill();
+}
+
+function onPipeSlide(i) {
+  const v = parseFloat(document.getElementById('pl-sl-'+i).value);
+  fillState.lengths[i] = v;
+  document.getElementById('pl-in-'+i).value = v;
+  calcFill();
+}
+
+function calcFill() {
+  fillState.km = document.getElementById('fill-km').value;
+  const n = fillState.type === 'single' ? 1 : fillState.ig;
+  let total = 0;
+  const details = [];
+  for (let i = 0; i < n; i++) {
+    const len = fillState.lengths[i] || 10;
+    const extra = Math.max(0, len - fillState.pre);
+    const g = Math.round(extra * fillState.gpm);
+    total += g;
+    if (n > 1) details.push(`Strang ${i+1}: ${len}m − ${fillState.pre}m = ${extra}m × ${fillState.gpm}g = ${g}g`);
+    else details.push(`${len}m − ${fillState.pre}m Vorladung = ${extra}m × ${fillState.gpm}g/m`);
+  }
+  document.getElementById('fill-g').textContent = total;
+  document.getElementById('fill-sub').innerHTML = details.join('<br>') + (total === 0 ? '<br>⚡ Keine Nachrüstung nötig – Länge ≤ Vorbeladung' : '');
+
+  // Fill method hint
+  const km = fillState.km;
+  let method = '';
+  if (km === 'R410A' || km === 'R404A' || km === 'R407C' || km === 'R448A' || km === 'R449A') {
+    method = `<div class="msg warn"><span class="msg-ico">🔄</span><span><b>${km}: Auf dem Kopf füllen!</b> Zylinder umdrehen → flüssige Phase entnehmen.</span></div>`;
+  } else {
+    method = `<div class="msg info"><span class="msg-ico">ℹ️</span><span><b>${km}: Füllausrichtung beliebig.</b></span></div>`;
+  }
+  document.getElementById('fill-method').innerHTML = method;
+}
+
+// ═══════════════════════════════════════════════
+// p-T TABLES
+// ═══════════════════════════════════════════════
+function renderPT() {
+  const km = document.getElementById('tbl-km').value;
+  const d = SAT[km];
+  if (!d) return;
+  const tbody = document.getElementById('pt-body');
+  tbody.innerHTML = d.T.map((t, i) => {
+    const p = d.P[i];
+    let area = '';
+    if (t >= 0 && t <= 15) area = '<span class="badge badge-b">ND Kühl</span>';
+    else if (t >= 30 && t <= 55) area = '<span class="badge badge-y">HD Kühl</span>';
+    else if (t >= -15 && t < 0) area = '<span class="badge badge-g">ND Heiz</span>';
+    return `<tr><td class="hi">${t}°C</td><td>${p.toFixed(2)} bar</td><td>${area}</td></tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// INFO / CHECKLISTE
+// ═══════════════════════════════════════════════
+const IBN_STEPS = [
+  'Innengerät <b>20 cm unterhalb der Decke</b> platzieren.',
+  '<b>Kernbohrung mit Gefälle</b> bohren.',
+  '<b>Außengerät setzen.</b>',
+  'Leitungen, Kommunikationskabel und Kondensatablauf durchziehen.',
+  'Rohr bördeln und anschließen. <b>Etwas Öl an die Verschraubung</b> sprühen.',
+  'Anlage mit <b>getrocknetem Stickstoff abdrücken</b>. Max. ca. 40 bar (20 bar reicht). Kurz einlassen, Druckabfall beobachten. Nach 5 min: gleichbleibend → mehr nachschieben. Ca. 1h stehen lassen.',
+  '<b>Stickstoffdruck ablassen</b> (ca. 1 bar im System belassen).',
+  'Anlage <b>evakuieren</b>: kurze Strecke 10–15 min, längere Strecken bis 5m = 30 min. Danach 30–60 min Vakuum halten prüfen. Derweil Elektrik verlegen.',
+  '<b>Elektrische Verdrahtung</b> der Anlage durchführen.',
+  'Elektrisch einschalten und Anlage ca. <b>30 Minuten "Aus"</b> lassen (Öl aufheizen).',
+  'Vor Ventilöffnung: Schlauch zur Vakuumpumpe schließen → <b>Einspritzventil öffnen</b> bis ca. 0.2–0.3 bar ansteht → Schlauch schnell entfernen.',
+  'Abdeckungen für die <b>Ventile wieder anbringen</b>.',
+  'Mit <b>Lecksuchgerät alle Anschlüsse</b> überprüfen.',
+  'Anlage einschalten, <b>Anliegetemperaturen und Ausblastemperaturen messen</b>.',
+  '<b>Leitungen dämmen</b> und Abdeckungen anbringen.',
+  '<b>Werte dokumentieren</b>: Saugleitung, Einspritzleitung, Ausblase, Verdichterendtemp.'
+];
+
+const RECOVERY_STEPS = [
+  'IG einschalten. <b>Raumtemperatur muss wärmer sein</b> als IG-Solltemperatur (IG muss anlaufen). Alternativ: IG-Fühler warmhalten.',
+  '<b>Monteurhilfe ND-seitig anschließen.</b>',
+  'Bei laufendem Betrieb: <b>Einspritzleitung (dünne Leitung) zudrehen.</b>',
+  'Saugdruck beginnt zu fallen. <b>Fernbedienung bereithalten.</b>',
+  'Druck beobachten → bei <b>knapp unter 0 bar Anlage abschalten</b> (Repschalter/FB).',
+  'Sobald Vakuum erreicht ist: <b>Sauggasleitung zudrehen.</b>'
+];
+
+function renderInfo() {
+  const ibnEl = document.getElementById('ibn-list');
+  if (!ibnEl.innerHTML) {
+    ibnEl.innerHTML = IBN_STEPS.map((s,i) =>
+      `<div class="chk-item"><div class="chk-num">${i+1}</div><div class="chk-txt">${s}</div></div>`
+    ).join('');
+  }
+  const recEl = document.getElementById('recovery-list');
+  if (!recEl.innerHTML) {
+    recEl.innerHTML = RECOVERY_STEPS.map((s,i) =>
+      `<div class="chk-item"><div class="chk-num">${i+1}</div><div class="chk-txt">${s}</div></div>`
+    ).join('');
+    recEl.innerHTML += `
+      <div style="margin-top:10px;padding:10px;background:rgba(239,68,68,.08);border-radius:10px;border-left:3px solid var(--err);">
+        <b style="color:var(--err);font-size:13px;">ACHTUNG!</b>
+        <ul class="info-ul" style="margin-top:5px;">
+          <li>Wurde KM nachgefüllt (Rohrlängenzuschlag) → <b>immer absaugen</b></li>
+          <li>Ist Anlage dicht?</li>
+          <li>Bei extremem Höhenunterschied: Gerät vor Demontage <b>30 min laufen</b> lassen (Öl zurückführen)</li>
+        </ul>
+      </div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// RICHTWERTE PAGE
+// ═══════════════════════════════════════════════
+let rvState = { modus: 'cool', gtype: 'wall' };
+let rvKm = 'R410A';
+
+function rvKmChange() {
+  rvKm = document.getElementById('rv-km').value;
+  renderRichtwerte();
+}
+
+function rvSetMode(m) {
+  rvState.modus = m;
+  document.getElementById('rv-cool').classList.toggle('on', m === 'cool');
+  document.getElementById('rv-heat').classList.toggle('on', m === 'heat');
+  renderRichtwerte();
+}
+
+function rvSetGtype(g) {
+  rvState.gtype = g;
+  document.getElementById('rv-wall').classList.toggle('on', g === 'wall');
+  document.getElementById('rv-cass').classList.toggle('on', g === 'cass');
+  renderRichtwerte();
+}
+
+const KM_INFO = {
+  R32:   { gwp: 675,  bp: -51.7, safety: 'A2L (leicht entzündlich)', note: 'Niedriges GWP · sehr effizient · Ersatz für R410A' },
+  R410A: { gwp: 2088, bp: -51.5, safety: 'A1 (nicht entzündlich)',   note: 'Zeotropes Gemisch R32+R125 · läuft aus' },
+  R134a: { gwp: 1430, bp: -26.3, safety: 'A1 (nicht entzündlich)',   note: 'Einzelstoff · Pkw-Klimaanlagen · Kühlschränke' },
+  R404A: { gwp: 3922, bp: -46.5, safety: 'A1 (nicht entzündlich)',   note: 'Kälte/Tiefkühl · sehr hohes GWP · läuft aus' },
+  R407C: { gwp: 1774, bp: -43.8, safety: 'A1 (nicht entzündlich)',   note: 'Zeotrop R32+R125+R134a · Temperaturgleit ~7K' },
+  R448A: { gwp: 1273, bp: -45.9, safety: 'A1 (nicht entzündlich)',   note: 'HFO-Mix · R404A-Ersatz · niedriges GWP' },
+  R449A: { gwp: 1282, bp: -46.0, safety: 'A1 (nicht entzündlich)',   note: 'HFO-Mix · R22/R404A-Ersatz' },
+  R22:   { gwp: 1810, bp: -40.8, safety: 'A1 (nicht entzündlich)',   note: '⚠ FCKW-Ersatz · Nachfüllen in EU verboten!' },
+};
+
+function renderRichtwerte() {
+  const km = rvKm;
+  const ndBar = parseFloat(document.getElementById('rv-nd').value) || 8.0;
+  const tEvap = pressToTemp(km, ndBar);
+  const isCool = rvState.modus === 'cool';
+  const isWall = rvState.gtype === 'wall';
+
+  const tsatEl = document.getElementById('rv-tsat');
+  tsatEl.textContent = isNaN(tEvap) ? 'T_Verdampf.: —' : 'T_Verdampf.: ' + tEvap.toFixed(1) + ' °C';
+  document.getElementById('rv-km-lbl').textContent = km;
+
+  const items = [];
+
+  if (!isNaN(tEvap)) {
+    const sugMin = (tEvap + 5).toFixed(1);
+    const sugMax = (tEvap + 10).toFixed(1);
+    items.push({ name: 'Saugleitung', soll: sugMin + ' – ' + sugMax + ' °C', note: 'T_Verdampf. + 5 bis 10 K Überhitzung', color: 'blue' });
+
+    if (isCool) {
+      const ausOff1 = isWall ? 9  : 11;
+      const ausOff2 = isWall ? 14 : 17;
+      const ausMin = (tEvap + ausOff1).toFixed(1);
+      const ausMax = (tEvap + ausOff2).toFixed(1);
+      items.push({ name: 'Ausblastemperatur', soll: ausMin + ' – ' + ausMax + ' °C', note: (isWall ? 'Wandgerät' : 'Deckenkassette') + ' · T_Verdampf. + ' + ausOff1 + '–' + ausOff2 + ' K', color: 'blue' });
+    } else {
+      items.push({ name: 'Ausblastemperatur', soll: '35 – 50 °C', note: 'Heizbetrieb — abhängig von Außentemp.', color: 'blue' });
+    }
+  } else {
+    items.push({ name: 'Saugleitung', soll: isCool ? '10 – 15 °C' : '8 – 15 °C', note: 'Typische Betriebswerte', color: 'blue' });
+    items.push({ name: 'Ausblastemperatur', soll: isCool ? (isWall ? '9 – 13 °C' : '11 – 17 °C') : '35 – 50 °C', note: isCool ? (isWall ? 'Wandgerät · Kühlbetrieb' : 'Kassette · Kühlbetrieb') : 'Heizbetrieb', color: 'blue' });
+  }
+
+  items.push({ name: 'Überhitzung', soll: '5 – 8 K', note: 'T_Saugl. − T_Verdampf. (Soll)', color: 'ok' });
+  items.push({ name: 'Unterkühlung', soll: '2 – 5 K', note: 'T_Kond. − T_Einspritz. (Soll)', color: 'ok' });
+  items.push({ name: 'Einspritzleitung', soll: '12 – 25 °C', note: 'Abhängig von Verflüssigungstemperatur', color: 'blue' });
+  items.push({ name: 'Verdichterendtemp.', soll: '55 – 75 °C', note: 'Warnung >85 °C · Abschalten >100 °C', color: 'ok' });
+
+  const colorMap    = { ok: '#22c55e', blue: '#60a5fa', warn: '#f59e0b', err: '#ef4444' };
+  const bgMap       = { ok: 'rgba(34,197,94,.07)',  blue: 'rgba(59,130,246,.07)',  warn: 'rgba(245,158,11,.07)',  err: 'rgba(239,68,68,.07)' };
+  const borderMap   = { ok: 'rgba(34,197,94,.22)',  blue: 'rgba(59,130,246,.22)',  warn: 'rgba(245,158,11,.22)',  err: 'rgba(239,68,68,.22)' };
+
+  document.getElementById('rv-cards').innerHTML = items.map(it =>
+    `<div style="background:${bgMap[it.color]};border:1.5px solid ${borderMap[it.color]};border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;flex-shrink:0">${it.name}</span>
+        <span style="font-size:19px;font-weight:800;color:${colorMap[it.color]};white-space:nowrap">${it.soll}</span>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px">${it.note}</div>
+    </div>`
+  ).join('');
+
+  const info = KM_INFO[km] || {};
+  document.getElementById('rv-km-info').innerHTML =
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="duo-card"><div class="duo-lbl">GWP</div><div class="duo-val" style="font-size:20px;color:var(--accent2)">${info.gwp}</div></div>
+      <div class="duo-card"><div class="duo-lbl">Siedepunkt</div><div class="duo-val" style="font-size:20px;color:var(--accent2)">${info.bp}°C</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:4px"><b>Sicherheitsklasse:</b> ${info.safety}</div>
+    <div style="font-size:12px;color:var(--text3)">${info.note}</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+function init() {
+  updateSollTexts();
+  renderPipes();
+  onUpdate();
+  calcFill();
+  renderPT();
+  renderRichtwerte();
+}
+
+init();
+</script>
+</body>
+</html>
