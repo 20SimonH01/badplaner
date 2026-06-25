@@ -521,6 +521,55 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
 .rv-gauge-tip.ok  {border-left-color:rgba(34,197,94,.4);}
 .rv-gauge-tip.warn{border-left-color:rgba(245,158,11,.4);}
 .rv-gauge-tip.err {border-left-color:rgba(239,68,68,.4);}
+
+/* ── Toggle Switch ── */
+.rv-section-toggle{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 0;border-top:1px solid rgba(255,255,255,.05);
+  margin-top:10px;cursor:pointer;user-select:none;
+}
+.rv-toggle-sw{
+  width:46px;height:26px;border-radius:13px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);
+  position:relative;transition:background .25s,border-color .25s;flex-shrink:0;
+}
+.rv-toggle-sw::after{
+  content:'';position:absolute;
+  width:20px;height:20px;border-radius:50%;background:#fff;
+  top:2px;left:2px;transition:transform .25s;
+  box-shadow:0 1px 5px rgba(0,0,0,.35);
+}
+.rv-toggle-sw.on{background:var(--accent);border-color:var(--accent);}
+.rv-toggle-sw.on::after{transform:translateX(20px);}
+
+/* ── Fill Result ── */
+.rv-fill-res{
+  background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(139,92,246,.08));
+  border:1px solid rgba(96,165,250,.25);border-top:1px solid rgba(165,140,255,.3);
+  border-radius:14px;padding:16px;text-align:center;margin-top:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+.rv-fill-big{
+  font-size:46px;font-weight:900;letter-spacing:-2px;
+  background:linear-gradient(120deg,#60A5FA,#06B6D4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.rv-fill-unit{font-size:17px;color:var(--text2);}
+.rv-fill-note{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6;}
+
+/* ── Fill Estimate ── */
+.rv-estimate{border-radius:12px;padding:13px;margin-bottom:14px;}
+.rv-estimate.ok  {background:rgba(16,185,129,.07); border-left:3px solid var(--ok);}
+.rv-estimate.warn{background:rgba(245,158,11,.07); border-left:3px solid var(--warn);}
+.rv-estimate.err {background:rgba(239,68,68,.07);  border-left:3px solid var(--err);}
+.rv-est-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.rv-est-detail{font-size:12px;color:var(--text2);margin-bottom:7px;line-height:1.5;}
+.rv-est-hint{
+  font-size:12px;color:var(--text);
+  background:rgba(255,255,255,.05);padding:8px 10px;
+  border-radius:8px;line-height:1.5;
+}
+.rv-est-conf{font-size:10px;color:var(--text3);margin-top:7px;}
 </style>
 </head>
 <body>
@@ -669,6 +718,14 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
         <button class="seg-btn on" id="rv-wall" onclick="rvSetGtype('wall')">📱 Wandgerät</button>
         <button class="seg-btn" id="rv-cass" onclick="rvSetGtype('cass')">⬛ Kassette</button>
       </div>
+      <!-- Füllrechner Toggle -->
+      <div class="rv-section-toggle" onclick="rvToggleFill()">
+        <div>
+          <div style="font-size:13px;font-weight:600">Füllrechner einblenden</div>
+          <div style="font-size:11px;color:var(--text3)">Erstinbetriebnahme &amp; Kältemittelbefüllung</div>
+        </div>
+        <div class="rv-toggle-sw" id="rv-fill-sw"></div>
+      </div>
     </div>
 
     <!-- Messwerte -->
@@ -702,9 +759,68 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
       <div id="rv-add-menu" style="display:none"></div>
     </div>
 
+    <!-- Füllmenge (hidden until toggled) -->
+    <div class="card" id="rv-fill-card" style="display:none">
+      <div class="card-lbl">Füllrechner — Erstinbetriebnahme</div>
+
+      <!-- AG-Vorbeladung Toggle -->
+      <div class="rv-section-toggle" onclick="rvTogglePre()">
+        <div>
+          <div style="font-size:13px;font-weight:600">AG-Vorbeladung bekannt</div>
+          <div style="font-size:11px;color:var(--text3)">Menge laut Typenschild angeben</div>
+        </div>
+        <div class="rv-toggle-sw" id="rv-pre-sw"></div>
+      </div>
+
+      <!-- Pre-fill input -->
+      <div id="rv-pre-section" style="display:none;margin-top:10px">
+        <div class="seg" style="margin-bottom:8px">
+          <button class="seg-btn on" id="rv-pre-kg" onclick="rvSetPreUnit('kg')">kg</button>
+          <button class="seg-btn" id="rv-pre-m" onclick="rvSetPreUnit('m')">Meter</button>
+        </div>
+        <div class="mw-entry">
+          <input type="number" inputmode="decimal" class="val-in" id="rv-pre-val"
+            value="0" min="0" max="20" step="0.05" oninput="rvCalcFill()">
+          <span class="sl-unit" id="rv-pre-unit-lbl">kg</span>
+        </div>
+      </div>
+
+      <!-- Pipe size -->
+      <div class="card-lbl" style="margin-top:14px;margin-bottom:6px">Rohrdurchmesser Flüssigkeitsleitung</div>
+      <div class="seg">
+        <button class="seg-btn" id="rv-pipe-635" onclick="rvSetPipeRv('6.35',15)">1/4"<br><small>15g/m</small></button>
+        <button class="seg-btn on" id="rv-pipe-952" onclick="rvSetPipeRv('9.52',20)">3/8"<br><small>20g/m</small></button>
+        <button class="seg-btn" id="rv-pipe-127" onclick="rvSetPipeRv('12.7',30)">1/2"<br><small>30g/m</small></button>
+        <button class="seg-btn" id="rv-pipe-1588" onclick="rvSetPipeRv('15.88',45)">5/8"<br><small>45g/m</small></button>
+      </div>
+
+      <!-- Pipe length -->
+      <div class="card-lbl" style="margin-top:14px;margin-bottom:6px">Rohrleitungslänge gesamt</div>
+      <div class="mw-entry">
+        <input type="number" inputmode="decimal" class="val-in" id="rv-pipe-len"
+          value="5" min="0.5" max="100" step="0.5" oninput="rvCalcFill()">
+        <span class="sl-unit">m</span>
+      </div>
+
+      <!-- Fill result -->
+      <div id="rv-fill-result" style="display:none;margin-top:0">
+        <div class="rv-fill-res">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Zusätzlich nachzufüllen</div>
+          <div><span class="rv-fill-big" id="rv-fill-g">0</span><span class="rv-fill-unit"> g</span></div>
+          <div class="rv-fill-note" id="rv-fill-note"></div>
+        </div>
+        <div class="msg info" style="margin-top:10px">
+          <span class="msg-ico">ℹ️</span>
+          <span style="font-size:11px">Immer laut Typenschild befüllen! Angaben variieren je nach Hersteller.</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Bewertung mit Gauges -->
     <div class="card">
       <div class="card-lbl">Bewertung — <span id="rv-km-lbl">R410A</span></div>
+      <!-- Fill state estimate (shown when enough values available) -->
+      <div id="rv-fill-estimate"></div>
       <div id="rv-gauges"><div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 0">ND-Druck eingeben, um Bewertung zu sehen.</div></div>
     </div>
 
@@ -1856,6 +1972,189 @@ function rvMakeGauge(value, cfg, id) {
     </div>`;
 }
 
+// ── Fill calculator state ──
+let rvFill = { on: false, preOn: false, preUnit: 'kg', pipe: '9.52', gpm: 20 };
+
+function rvToggleFill() {
+  rvFill.on = !rvFill.on;
+  const sw = document.getElementById('rv-fill-sw');
+  if (sw) sw.classList.toggle('on', rvFill.on);
+  const card = document.getElementById('rv-fill-card');
+  if (card) card.style.display = rvFill.on ? 'block' : 'none';
+  if (rvFill.on) rvCalcFill();
+}
+
+function rvTogglePre() {
+  rvFill.preOn = !rvFill.preOn;
+  const sw = document.getElementById('rv-pre-sw');
+  if (sw) sw.classList.toggle('on', rvFill.preOn);
+  const sec = document.getElementById('rv-pre-section');
+  if (sec) sec.style.display = rvFill.preOn ? 'block' : 'none';
+  rvCalcFill();
+}
+
+function rvSetPreUnit(unit) {
+  rvFill.preUnit = unit;
+  document.getElementById('rv-pre-kg').classList.toggle('on', unit === 'kg');
+  document.getElementById('rv-pre-m').classList.toggle('on', unit === 'm');
+  const lbl = document.getElementById('rv-pre-unit-lbl');
+  if (lbl) lbl.textContent = unit === 'kg' ? 'kg' : 'm';
+  rvCalcFill();
+}
+
+function rvSetPipeRv(d, gpm) {
+  rvFill.pipe = d;
+  rvFill.gpm  = gpm;
+  ['6.35','9.52','12.7','15.88'].forEach(p => {
+    const el = document.getElementById('rv-pipe-' + p.replace('.',''));
+    if (el) el.classList.toggle('on', p === d);
+  });
+  rvCalcFill();
+}
+
+function rvCalcFill() {
+  if (!rvFill.on) return;
+  const pipeLenEl = document.getElementById('rv-pipe-len');
+  const preValEl  = document.getElementById('rv-pre-val');
+  if (!pipeLenEl) return;
+  const pipeLen = parseFloat(pipeLenEl.value) || 0;
+  const preVal  = rvFill.preOn ? (parseFloat(preValEl?.value) || 0) : 0;
+  const totalFromPipe = pipeLen * rvFill.gpm;
+  let additional = 0;
+  let noteText = '';
+  if (rvFill.preOn && preVal > 0) {
+    if (rvFill.preUnit === 'kg') {
+      const preGrams = preVal * 1000;
+      additional = Math.max(0, totalFromPipe - preGrams);
+      noteText = `${pipeLen}m × ${rvFill.gpm}g/m = ${totalFromPipe.toFixed(0)}g − Vorbeladung ${preGrams.toFixed(0)}g`;
+    } else {
+      const preFillGrams = preVal * rvFill.gpm;
+      additional = Math.max(0, totalFromPipe - preFillGrams);
+      noteText = `${pipeLen}m − ${preVal}m Vorbeladung = ${Math.max(0, pipeLen - preVal).toFixed(1)}m × ${rvFill.gpm}g/m`;
+    }
+  } else {
+    additional = totalFromPipe;
+    noteText = `${pipeLen}m × ${rvFill.gpm}g/m${rvFill.preOn ? ' (AG leer / kein Vorladen)' : ''}`;
+  }
+  const gEl   = document.getElementById('rv-fill-g');
+  const noteEl = document.getElementById('rv-fill-note');
+  const resEl  = document.getElementById('rv-fill-result');
+  if (gEl)   gEl.textContent   = Math.round(additional);
+  if (noteEl) noteEl.textContent = noteText;
+  if (resEl)  resEl.style.display = 'block';
+}
+
+// ── Fill state estimation from measured values ──
+function rvEstimateFill(nd, tEvap, uh, ausIg, isCool, isWall, km) {
+  let score = 0, weight = 0;
+  const factors = [];
+
+  // ND pressure (weight 1)
+  if (nd !== null && km) {
+    const KM_OK = {
+      R32:   isCool ? [6,9]   : [2.5,6],
+      R410A: isCool ? [7,11]  : [3.5,8],
+      R134a: isCool ? [2.5,5.5]: [1,3],
+      R404A: isCool ? [7,11]  : [3.5,8],
+      R407C: isCool ? [6,10]  : [3,7],
+      R448A: isCool ? [6,10]  : [3,7],
+      R449A: isCool ? [6,10]  : [3,7],
+      R22:   isCool ? [5,9]   : [2.5,6.5],
+    };
+    const [okL, okH] = KM_OK[km] || [6,10];
+    const half = (okH - okL) / 2;
+    if (nd < okL) {
+      score -= Math.min((okL - nd) / half, 2);
+      factors.push({ name:'Niederdruck', dir:'zu niedrig' });
+    } else if (nd > okH) {
+      score += Math.min((nd - okH) / half, 2);
+      factors.push({ name:'Niederdruck', dir:'zu hoch' });
+    } else {
+      factors.push({ name:'Niederdruck', dir:'optimal' });
+    }
+    weight += 1;
+  }
+
+  // Überhitzung (weight 2 — most reliable)
+  if (uh !== null) {
+    if (uh < 3) {
+      score += 2 * (1 + (3 - uh) / 3);
+      factors.push({ name:'Überhitzung', dir:`${uh.toFixed(1)}K — zu gering` });
+    } else if (uh < 5) {
+      score += 1;
+      factors.push({ name:'Überhitzung', dir:`${uh.toFixed(1)}K — leicht zu gering` });
+    } else if (uh <= 8) {
+      factors.push({ name:'Überhitzung', dir:`${uh.toFixed(1)}K — optimal` });
+    } else if (uh <= 15) {
+      score -= 2 * ((uh - 8) / 7);
+      factors.push({ name:'Überhitzung', dir:`${uh.toFixed(1)}K — leicht erhöht` });
+    } else {
+      score -= 4;
+      factors.push({ name:'Überhitzung', dir:`${uh.toFixed(1)}K — zu hoch` });
+    }
+    weight += 2;
+  }
+
+  // Ausblase IG (weight 0.5)
+  if (ausIg !== null && isCool) {
+    const okL = isWall ? 9 : 11;
+    const okH = isWall ? 13 : 17;
+    if (ausIg > okH + 3)      { score -= 0.5; factors.push({ name:'Ausblase IG', dir:'zu warm' }); }
+    else if (ausIg < okL - 2) { score += 0.5; factors.push({ name:'Ausblase IG', dir:'zu kalt' }); }
+    else                       { factors.push({ name:'Ausblase IG', dir:'in Ordnung' }); }
+    weight += 0.5;
+  }
+
+  if (weight === 0) return null;
+
+  const norm       = score / weight;
+  const confidence = Math.min(100, Math.round(weight / 3.5 * 100));
+  let cls, ico, title, detail, hint;
+
+  if (Math.abs(norm) < 0.18) {
+    cls='ok'; ico='✓'; title='Füllmenge: Optimal';
+    detail='Die Messwerte deuten auf eine korrekte Kältemittelfüllung hin.';
+    hint='Anlage läuft im Soll-Bereich. Werte weiterhin beobachten.';
+  } else if (norm < 0) {
+    const severe = norm < -0.65;
+    cls=severe?'err':'warn'; ico=severe?'✗':'⚠';
+    title=severe?'Füllmenge: Deutlich zu wenig!':'Füllmenge: Tendenziell zu wenig';
+    detail='Messwerte deuten auf Kältemittelmangel hin.';
+    hint=severe
+      ? 'KM nachfüllen! Anlage auf Lecks prüfen. HD und ND nach jedem Schritt kontrollieren.'
+      : 'Etwas KM schrittweise (50–100g) nachfüllen und Werte beobachten.';
+  } else {
+    const severe = norm > 0.65;
+    cls=severe?'err':'warn'; ico=severe?'✗':'⚠';
+    title=severe?'Füllmenge: Deutlich zu viel!':'Füllmenge: Tendenziell zu viel';
+    detail='Messwerte deuten auf Überfüllung hin.';
+    hint=severe
+      ? 'KM ablassen! Flüssigschlaggefahr für den Verdichter. Sofort HD und ND beobachten.'
+      : 'Etwas KM schrittweise (50–100g) ablassen und Werte neu prüfen.';
+  }
+
+  return { cls, ico, title, detail, hint, confidence, factors };
+}
+
+function rvRenderFillEstimate(r) {
+  if (!r) return '';
+  const color = r.cls==='ok'?'var(--ok)':r.cls==='warn'?'var(--warn)':'var(--err)';
+  const factorHtml = r.factors.map(f =>
+    `<span style="font-size:10px;color:var(--text3);background:rgba(255,255,255,.04);padding:2px 7px;border-radius:10px;display:inline-block;margin:0 4px 4px 0">${f.name}: ${f.dir}</span>`
+  ).join('');
+  return `
+    <div class="rv-estimate ${r.cls}" style="margin-bottom:14px">
+      <div class="rv-est-title"><span style="font-size:16px">${r.ico}</span> ${r.title}</div>
+      <div class="rv-est-detail">${r.detail}</div>
+      <div style="margin-bottom:7px;line-height:2">${factorHtml}</div>
+      <div class="rv-est-hint">${r.hint}</div>
+      <div class="rv-est-conf">Konfidenz: ${r.confidence}% · ${r.factors.length} Messwert${r.factors.length!==1?'e':''} ausgewertet</div>
+      <div style="height:3px;border-radius:2px;background:rgba(255,255,255,.07);margin-top:6px">
+        <div style="height:3px;border-radius:2px;background:${color};width:${r.confidence}%;transition:width .4s"></div>
+      </div>
+    </div>`;
+}
+
 function rvOnUpdate() {
   const ndBar  = parseFloat(document.getElementById('rv-nd-in')?.value) || 0;
   const tEvap  = pressToTemp(rvKm, ndBar);
@@ -1898,6 +2197,17 @@ function rvOnUpdate() {
   const tHd2 = vals.hd != null ? pressToTemp(rvKm, vals.hd) : null;
   const uh = (vals.sug != null && tEvap !== null) ? vals.sug - tEvap : null;
   const uk = (vals.esp != null && tHd2 !== null) ? tHd2 - vals.esp : null;
+
+  // Fill state estimate — shown whenever we have enough data
+  const estEl = document.getElementById('rv-fill-estimate');
+  if (estEl) {
+    const ausIgVal = vals.aus_ig != null ? vals.aus_ig : null;
+    const est = rvEstimateFill(ndBar, tEvap, uh, ausIgVal, isCool, isWall, rvKm);
+    estEl.innerHTML = est ? rvRenderFillEstimate(est) : '';
+  }
+
+  // Also update fill calc if fill section is on
+  if (rvFill.on) rvCalcFill();
 
   const calcCard = document.getElementById('rv-calc-card');
   if (calcCard) {
