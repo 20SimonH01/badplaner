@@ -504,6 +504,23 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
 }
 .rv-gauge-foot{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--text3);}
 .rv-gauge-soll{color:var(--ok2);font-weight:700;text-align:center;}
+.rv-gauge-status{display:flex;align-items:center;gap:8px;margin:10px 0 6px;}
+.rv-gauge-badge{
+  font-size:11px;font-weight:800;letter-spacing:.05em;
+  padding:4px 11px;border-radius:20px;flex-shrink:0;
+}
+.rv-gauge-badge.ok  {background:rgba(34,197,94,.12); color:#34d399;border:1px solid rgba(34,197,94,.3);}
+.rv-gauge-badge.warn{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+.rv-gauge-badge.err {background:rgba(239,68,68,.12); color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.rv-gauge-tip{
+  font-size:12px;color:var(--text2);line-height:1.6;
+  padding:9px 11px;border-radius:9px;
+  background:rgba(255,255,255,.03);
+  border-left:2px solid;
+}
+.rv-gauge-tip.ok  {border-left-color:rgba(34,197,94,.4);}
+.rv-gauge-tip.warn{border-left-color:rgba(245,158,11,.4);}
+.rv-gauge-tip.err {border-left-color:rgba(239,68,68,.4);}
 </style>
 </head>
 <body>
@@ -1744,10 +1761,71 @@ function rvGetGaugeCfg(id, tEvap, isCool, isWall, km) {
   return null;
 }
 
-function rvMakeGauge(value, cfg) {
+const RV_TIPS = {
+  nd: {
+    ok:        'Betriebsdruck optimal – Anlage läuft effizient.',
+    warn_low:  'ND etwas niedrig. Saugleitung messen und HD-Druck hinzufügen zur Bestätigung.',
+    err_low:   'ND zu niedrig! Kältemittelmangel möglich. HD hinzufügen – beide niedrig = KM nachfüllen.',
+    warn_high: 'ND leicht erhöht. Verflüssiger auf Verschmutzung prüfen, AG-Lüfter kontrollieren.',
+    err_high:  'ND zu hoch! Mögliche Überfüllung oder verschmutzter Verflüssiger / defekter Lüfter.',
+  },
+  hd: {
+    ok:        'Hochdruck im Normalbereich.',
+    warn_low:  'HD niedrig. Zusammen mit niedrigem ND: Kältemittelmangel prüfen.',
+    err_low:   'HD kritisch niedrig! KM-Mangel sehr wahrscheinlich. Anlage auf Lecks prüfen.',
+    warn_high: 'HD erhöht. Verflüssiger reinigen, Luftzirkulation am AG sicherstellen.',
+    err_high:  'HD kritisch hoch! Verflüssiger reinigen, Lüfter und Luftstrom am AG sofort prüfen.',
+  },
+  aus_ig: {
+    ok:        'Ausblastemperatur Innengerät optimal.',
+    warn_low:  'Ausblase etwas kalt. Innenfilter und Luftstrom kontrollieren.',
+    err_low:   'Ausblase zu kalt! Innenfilter verschmutzt oder Luftstrom blockiert?',
+    warn_high: 'Ausblase etwas warm. KM-Menge und Betriebsdruck prüfen.',
+    err_high:  'Ausblase zu warm! Verdampfer verschmutzt, KM-Mangel oder Lüfterproblem.',
+  },
+  sug: {
+    ok:        'Saugleitungstemperatur optimal – Überhitzung im Zielbereich.',
+    warn_low:  'Saugleitung etwas kalt. Füllmenge leicht reduzieren oder Expansionsventil beobachten.',
+    err_low:   'Saugleitung zu kalt! Überhitzung zu gering – Flüssigkeit im Verdichter möglich. Füllmenge reduzieren.',
+    warn_high: 'Saugleitung etwas warm. KM-Menge prüfen, ggf. nachfüllen.',
+    err_high:  'Saugleitung zu warm – Überhitzung zu groß! Kältemittelmangel. Anlage auf Lecks prüfen.',
+  },
+  esp: {
+    ok:        'Einspritzleitung im Normalbereich – gute Unterkühlung.',
+    warn_low:  'Einspritzleitung kalt. Schauglas kontrollieren – Flashgas möglich.',
+    err_low:   'Einspritzleitung zu kalt! Mögliches Flashgas. Füllmenge und Schauglas prüfen.',
+    warn_high: 'Einspritzleitung warm. Unterkühlung gering – Verflüssiger und HD-Seite kontrollieren.',
+    err_high:  'Einspritzleitung zu warm! Verflüssiger verschmutzt oder Lüfter defekt. Reinigen.',
+  },
+  aus_ag: {
+    ok:        'Ausblastemperatur Außengerät normal.',
+    warn_low:  'AG bläst ungewöhnlich kalt. Betriebsmodus und Verflüssiger-Lüfter prüfen.',
+    err_low:   'AG Ausblase kritisch kalt. Lüfter oder Betriebsproblem?',
+    warn_high: 'AG bläst sehr warm. Verflüssiger auf Verschmutzung und Luftzirkulation prüfen.',
+    err_high:  'AG überhitzt! Verflüssiger reinigen, Lüfter und Luftzirkulation sofort prüfen.',
+  },
+  verd: {
+    ok:        'Verdichterendtemperatur im Normalbereich.',
+    warn_low:  'Verdichter kühler als normal. Mögliche Überfüllung oder Flüssigschlag prüfen.',
+    err_low:   'Verdichter zu kalt! Flüssiges KM könnte zurückschlagen – Überfüllung prüfen.',
+    warn_high: 'Verdichter läuft warm. Überhitzung und KM-Menge kontrollieren.',
+    err_high:  'Verdichter kritisch heiß! Sofort prüfen: KM-Mangel oder Überhitzung zu groß.',
+  },
+};
+
+function rvGetTip(id, zone, direction) {
+  const t = RV_TIPS[id];
+  if (!t) return { badge: zone === 'ok' ? '✓ Optimaler Bereich' : zone === 'warn' ? '⚠ Grenzbereich' : '✗ Kritisch', tip: '' };
+  const labels = { ok: '✓ Optimaler Bereich', warn: '⚠ Grenzbereich', err: '✗ Kritisch' };
+  const key = zone === 'ok' ? 'ok' : `${zone}_${direction}`;
+  return { badge: labels[zone], tip: t[key] || t[zone + '_low'] || '' };
+}
+
+function rvMakeGauge(value, cfg, id) {
   const { name, unit, min, max, warnLow, okLow, okHigh, warnHigh } = cfg;
   let zone = 'err';
-  if (value >= okLow && value <= okHigh) zone = 'ok';
+  let direction = value < okLow ? 'low' : 'high';
+  if (value >= okLow && value <= okHigh) { zone = 'ok'; direction = 'ok'; }
   else if ((value >= warnLow && value < okLow) || (value > okHigh && value <= warnHigh)) zone = 'warn';
 
   const clamp = v => Math.max(0, Math.min(100, (v - min) / (max - min) * 100));
@@ -1755,6 +1833,7 @@ function rvMakeGauge(value, cfg) {
   const p = v => clamp(v).toFixed(1);
   const gradient = `linear-gradient(to right,#1e3a8a 0%,#3b82f6 ${p(warnLow)}%,#22c55e ${p(okLow)}%,#22c55e ${p(okHigh)}%,#f59e0b ${p(warnHigh)}%,#ef4444 100%)`;
   const fmt = v => (v % 1 === 0 ? v.toString() : v.toFixed(1));
+  const { badge, tip } = rvGetTip(id, zone, direction);
 
   return `
     <div class="rv-gauge">
@@ -1770,6 +1849,10 @@ function rvMakeGauge(value, cfg) {
         <span class="rv-gauge-soll">✓ ${fmt(okLow)}–${fmt(okHigh)} ${unit}</span>
         <span>${fmt(max)} ${unit}</span>
       </div>
+      <div class="rv-gauge-status">
+        <span class="rv-gauge-badge ${zone}">${badge}</span>
+      </div>
+      ${tip ? `<div class="rv-gauge-tip ${zone}">${tip}</div>` : ''}
     </div>`;
 }
 
@@ -1805,7 +1888,7 @@ function rvOnUpdate() {
     const val = vals[id];
     if (val === null || val === undefined || isNaN(val)) return;
     const cfg = rvGetGaugeCfg(id, tEvap, isCool, isWall, rvKm);
-    if (cfg) gaugeHtml += rvMakeGauge(val, cfg);
+    if (cfg) gaugeHtml += rvMakeGauge(val, cfg, id);
   });
 
   const gaugesEl = document.getElementById('rv-gauges');
