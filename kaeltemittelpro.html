@@ -110,40 +110,24 @@ body{
   0%  {background-position:0% center;}
   100%{background-position:200% center;}
 }
-/* ── HEADER GREETING ── */
-.hdr-greet{
-  display:flex;align-items:center;gap:8px;
+/* ── HEADER LOCATION / WEATHER ── */
+.hdr-loc{
+  display:flex;align-items:center;gap:9px;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.12);border-radius:20px;
-  padding:6px 14px 6px 10px;
+  padding:6px 14px 6px 11px;
   backdrop-filter:blur(12px);
   box-shadow:0 0 16px rgba(59,130,246,.10),inset 0 1px 0 rgba(255,255,255,.08);
-  cursor:pointer;transition:background .2s,border-color .2s;
-  max-width:220px;
+  cursor:pointer;transition:background .22s,border-color .22s;
+  max-width:230px;user-select:none;
 }
-.hdr-greet:hover{background:rgba(255,255,255,.10);border-color:rgba(99,179,237,.35);}
-.hdr-greet-ico{font-size:16px;flex-shrink:0;}
-.hdr-greet-txt{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.hdr-greet-txt b{color:var(--accent);font-weight:700;}
-.hdr-greet-edit{font-size:10px;color:var(--text3);flex-shrink:0;opacity:.7;}
-/* name input overlay */
-.hdr-name-wrap{
-  display:none;position:absolute;top:62px;right:16px;z-index:300;
-  background:rgba(8,14,44,.92);border:1px solid rgba(99,179,237,.35);
-  border-radius:14px;padding:14px 16px;
-  backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.6);
-  min-width:220px;
-}
-.hdr-name-wrap.vis{display:block;}
-.hdr-name-wrap label{display:block;font-size:11px;font-weight:600;color:var(--text3);margin-bottom:8px;}
-.hdr-name-inp{
-  width:100%;box-sizing:border-box;
-  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
-  border-radius:9px;padding:8px 12px;color:#fff;font-size:14px;font-weight:600;
-  outline:none;
-}
-.hdr-name-inp:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(59,130,246,.25);}
-.hdr-name-hint{font-size:10px;color:var(--text3);margin-top:6px;}
+.hdr-loc:hover{background:rgba(255,255,255,.10);border-color:rgba(99,179,237,.35);}
+.hdr-loc-ico{font-size:17px;flex-shrink:0;line-height:1;}
+.hdr-loc-info{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.hdr-loc-top{font-size:12px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hdr-loc-top b{color:var(--cyan);}
+.hdr-loc-sub{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@keyframes loc-pulse{0%,100%{opacity:.4;}50%{opacity:1;}}
 
 /* ── TABS ── */
 .tabs{
@@ -635,16 +619,12 @@ ul.info-ul li{font-size:12px;color:var(--text2);line-height:1.9;}
 <!-- ═══════════════ HEADER ═══════════════ -->
 <header class="hdr">
   <span class="hdr-title">❄ KältemittelPro</span>
-  <div class="hdr-greet" id="hdr-greet" onclick="hdrGreetToggle()">
-    <span class="hdr-greet-ico" id="hdr-greet-ico">👋</span>
-    <span class="hdr-greet-txt" id="hdr-greet-txt"><b>Guten Tag</b></span>
-    <span class="hdr-greet-edit">✏</span>
-  </div>
-  <div class="hdr-name-wrap" id="hdr-name-wrap">
-    <label>Wie heißt du?</label>
-    <input class="hdr-name-inp" id="hdr-name-inp" type="text" maxlength="24"
-      placeholder="Dein Vorname…" oninput="hdrNameUpdate()" onkeydown="if(event.key==='Enter')hdrNameClose()">
-    <div class="hdr-name-hint">Wird lokal gespeichert · ↵ zum Bestätigen</div>
+  <div class="hdr-loc" id="hdr-loc" onclick="hdrLocRequest()" title="Standort aktualisieren">
+    <span class="hdr-loc-ico" id="hdr-loc-ico">📍</span>
+    <div class="hdr-loc-info">
+      <div class="hdr-loc-top" id="hdr-loc-top">Standort erlauben</div>
+      <div class="hdr-loc-sub" id="hdr-loc-sub">Tippen zum Aktivieren</div>
+    </div>
   </div>
 </header>
 
@@ -1316,49 +1296,75 @@ function showPage(p) {
 }
 
 // ═══════════════════════════════════════════════
-// HEADER GREETING
+// HEADER LOCATION + WEATHER
 // ═══════════════════════════════════════════════
-(function hdrGreetInit() {
-  function greetWord() {
-    const h = new Date().getHours();
-    if (h < 11) return ['🌅','Guten Morgen'];
-    if (h < 18) return ['☀️','Guten Tag'];
-    return ['🌙','Guten Abend'];
+(function hdrLocInit() {
+  const WMO = {
+    0:'☀️',1:'🌤',2:'⛅',3:'☁️',
+    45:'🌫',48:'🌫',
+    51:'🌦',53:'🌦',55:'🌧',
+    61:'🌧',63:'🌧',65:'🌧',
+    71:'🌨',73:'🌨',75:'🌨',77:'🌨',
+    80:'🌦',81:'🌧',82:'🌧',
+    85:'🌨',86:'🌨',
+    95:'⛈',96:'⛈',99:'⛈'
+  };
+  function wmoIcon(c){ return WMO[c] || '🌡'; }
+  function fmtDate(d){
+    const days=['So','Mo','Di','Mi','Do','Fr','Sa'];
+    const months=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    return `${days[d.getDay()]}, ${d.getDate()}. ${months[d.getMonth()]}`;
   }
-  function render() {
-    const name = localStorage.getItem('kmpro-name') || '';
-    const [ico, word] = greetWord();
-    document.getElementById('hdr-greet-ico').textContent = ico;
-    document.getElementById('hdr-greet-txt').innerHTML = name
-      ? `${word}, <b>${name}</b>`
-      : `<b>${word}</b> <span style="color:var(--text3);font-weight:400">– Wer bist du?</span>`;
-    const inp = document.getElementById('hdr-name-inp');
-    if (inp) inp.value = name;
+  function setTop(txt){ document.getElementById('hdr-loc-top').innerHTML = txt; }
+  function setSub(txt){ document.getElementById('hdr-loc-sub').textContent = txt; }
+  function setIco(e){ document.getElementById('hdr-loc-ico').textContent = e; }
+  function loading(){
+    setIco('⏳'); setTop('Lade…'); setSub('');
+    document.getElementById('hdr-loc-top').style.animation='loc-pulse 1.2s ease-in-out infinite';
   }
-  window.hdrGreetToggle = function() {
-    const w = document.getElementById('hdr-name-wrap');
-    const isVis = w.classList.toggle('vis');
-    if (isVis) {
-      const inp = document.getElementById('hdr-name-inp');
-      inp.focus(); inp.select();
+  function done(city, tempC, wCode){
+    document.getElementById('hdr-loc-top').style.animation='';
+    setIco(wmoIcon(wCode));
+    setTop(`<b>${city}</b> &nbsp;${Math.round(tempC)}°C`);
+    setSub(fmtDate(new Date()));
+    document.getElementById('hdr-loc').title='Klicken zum Aktualisieren';
+  }
+  function fail(msg){
+    document.getElementById('hdr-loc-top').style.animation='';
+    setIco('📍'); setTop('Standort erlauben'); setSub(msg||'Tippen zum Aktivieren');
+  }
+  async function fetchWeather(lat, lon){
+    loading();
+    try {
+      const [geo, wx] = await Promise.all([
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`)
+          .then(r=>r.json()),
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`)
+          .then(r=>r.json())
+      ]);
+      const city = geo.address.city || geo.address.town || geo.address.village || geo.address.county || 'Unbekannt';
+      const temp = wx.current.temperature_2m;
+      const code = wx.current.weather_code;
+      done(city, temp, code);
+    } catch(e) {
+      fail('Fehler beim Laden');
     }
+  }
+  window.hdrLocRequest = function(){
+    if (!navigator.geolocation) { fail('Nicht verfügbar'); return; }
+    loading();
+    navigator.geolocation.getCurrentPosition(
+      pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+      err => fail(err.code===1 ? 'Zugriff verweigert' : 'Standort nicht gefunden'),
+      {timeout:10000, maximumAge:300000}
+    );
   };
-  window.hdrNameUpdate = function() {
-    const v = document.getElementById('hdr-name-inp').value.trim();
-    if (v) localStorage.setItem('kmpro-name', v); else localStorage.removeItem('kmpro-name');
-    render();
-  };
-  window.hdrNameClose = function() {
-    document.getElementById('hdr-name-wrap').classList.remove('vis');
-  };
-  // close on outside click
-  document.addEventListener('click', function(e) {
-    if (!document.getElementById('hdr-greet').contains(e.target) &&
-        !document.getElementById('hdr-name-wrap').contains(e.target)) {
-      document.getElementById('hdr-name-wrap').classList.remove('vis');
-    }
-  });
-  render();
+  // auto-load if previously granted
+  if (navigator.permissions) {
+    navigator.permissions.query({name:'geolocation'}).then(p=>{
+      if (p.state==='granted') hdrLocRequest();
+    });
+  }
 })();
 
 // ═══════════════════════════════════════════════
